@@ -6,20 +6,14 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Map;
 
-
-public class IssuesAndReportersChart extends AbstractChart {
-
-  private static final String NUMBER_REPORTERS_IDENTIFIER = "Number of Reporters";
-  private static final String TOTAL_IDENTIFIER = "Total";
-  private static final String PERIOD_IDENTIFIER = "Period Identifier";
-  private static final String ISSUES_PER_REPORTER_IDENTIFIER = "Average Issues per Reporter";
+public class RelativePriorityChanges extends AbstractChart {
 
   private static final String FILE_LOCATION = 
       "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447519453706.csv";
+  private static final String PERIOD_IDENTIFIER = "Period Identifier";
+  private static final String PRIORITY_CHANGES_IDENTIFIER = "Priority Changes (%)";
 
   public static void main(String... args) {
     launch(args);
@@ -30,22 +24,20 @@ public class IssuesAndReportersChart extends AbstractChart {
     buildChart(stage);
   }
 
-  private void buildChart(Stage stage) throws FileNotFoundException, IOException {
-
+  private void buildChart(Stage stage) {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
     NumberAxis counterAxis = new NumberAxis();
-    counterAxis.setLabel(FREQUENCY_LABEL);
+    counterAxis.setLabel(RELATIVE_FREQUENCY_LABEL);
 
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
 
     Map<String, Series<String, Number>> chartSeries = getSeries(FILE_LOCATION, PERIOD_IDENTIFIER,
-        TOTAL_IDENTIFIER, NUMBER_REPORTERS_IDENTIFIER, ISSUES_PER_REPORTER_IDENTIFIER);
+        PRIORITY_CHANGES_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
-    showChart(scatterChart, "Issues and Reporters", stage);
+    showChart(scatterChart, "Priority Changes as Percentage", stage);
   }
-
 }

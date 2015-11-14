@@ -21,8 +21,9 @@ import java.util.Map;
 
 public abstract class AbstractChart extends Application {
 
-  public static final String FREQUENCY_LABEL = "Frequency";
   public static final String TIME_PERIOD_LABEL = "Time Period";
+  public static final String FREQUENCY_LABEL = "Frequency";
+  public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
 
   public static void main(String... args) {
     launch(args);
@@ -62,7 +63,7 @@ public abstract class AbstractChart extends Application {
 
         String identifierValue = csvRecord.get(recordIdentifier);
         for (String valueIdentifier : valueIdentifiers) {
-          Integer numericValue = Integer.parseInt(csvRecord.get(valueIdentifier));
+          Double numericValue = Double.parseDouble(csvRecord.get(valueIdentifier));
           series.get(valueIdentifier).getData().add(new Data<>(identifierValue, numericValue));
         }
       }
