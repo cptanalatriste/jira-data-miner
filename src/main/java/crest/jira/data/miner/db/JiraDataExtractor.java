@@ -1,4 +1,4 @@
-package crest.jira.data.miner;
+package crest.jira.data.miner.db;
 
 import com.j256.ormlite.support.ConnectionSource;
 

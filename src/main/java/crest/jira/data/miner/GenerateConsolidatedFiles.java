@@ -1,26 +1,27 @@
 package crest.jira.data.miner;
 
 import crest.jira.data.miner.config.ConfigurationProvider;
-import crest.jira.data.miner.report.JiraIssueAnalyzer;
+import crest.jira.data.miner.db.JiraIssueDao;
 import crest.jira.data.miner.report.model.ExtendedIssue;
-import crest.jira.data.miner.report.model.IssueListMetrics;
+import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
 import org.apache.commons.collections4.map.MultiValueMap;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
-public class ExecuteAnalytics {
+public class GenerateConsolidatedFiles {
 
-  private static final String FILENAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/analyzer.csv";
-  private static final String BOARD_ID = "25";
-  // private static Logger logger =
-  // Logger.getLogger(JiraDataExtractor.class.getName());
+  private static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/" + "";
+  public static final String BOARD_ID = "25";
+  private static final String NEW_LINE_SEPARATOR = "\n";
 
   /**
    * Analyzes the Testers moves per time frame. *
@@ -34,12 +35,10 @@ public class ExecuteAnalytics {
    * @throws SecurityException
    *           In case of logging issues.
    */
-  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws SQLException, SecurityException, IOException {
 
     ConfigurationProvider configProvider = new ConfigurationProvider();
-    JiraIssueAnalyzer analyser = new JiraIssueAnalyzer(BOARD_ID,
-        configProvider.getConnectionSource());
+    JiraIssueDao analyser = new JiraIssueDao(BOARD_ID, configProvider.getConnectionSource());
     analyser.loadIssues();
 
     MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = analyser.organizeTimeFrames();
@@ -47,17 +46,27 @@ public class ExecuteAnalytics {
     Object[] keysAsArray = issuesPerTimeFrame.keySet().toArray();
     Arrays.sort(keysAsArray);
 
-    BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(FILENAME));
-    try (PrintWriter printWriter = new PrintWriter(bufferedWriter)) {
+    generateCsvFile(BOARD_ID, keysAsArray, issuesPerTimeFrame);
 
-      printWriter.println(IssueListMetrics.getMetricHeader());
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void generateCsvFile(String boardId, Object[] keysAsArray,
+      MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame) throws IOException {
+
+    CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator(NEW_LINE_SEPARATOR);
+    BufferedWriter bufferedWriter = new BufferedWriter(
+        new FileWriter(FOLDER_NAME + "Board_" + boardId + "_" + new Date().getTime() + ".csv"));
+    try (CSVPrinter csvPrinter = new CSVPrinter(bufferedWriter, csvFileFormat)) {
+
+      csvPrinter.printRecord(IssueListMetricGenerator.getMetricHeader());
 
       for (Object oneKey : keysAsArray) {
         String key = (String) oneKey;
 
         List<ExtendedIssue> listOfIssues = (List<ExtendedIssue>) issuesPerTimeFrame.get(oneKey);
-        IssueListMetrics metrics = new IssueListMetrics(key, listOfIssues);
-        printWriter.println(metrics.getMetricsAsString());
+        IssueListMetricGenerator metrics = new IssueListMetricGenerator(key, listOfIssues);
+        csvPrinter.printRecord(metrics.getMetricsAsList());
       }
 
     } catch (Exception ex) {

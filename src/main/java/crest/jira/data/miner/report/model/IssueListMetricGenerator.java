@@ -1,9 +1,10 @@
 package crest.jira.data.miner.report.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class IssueListMetrics {
+public class IssueListMetricGenerator {
 
   private HashMap<String, Integer> priorityCounter = new HashMap<String, Integer>();
   private HashMap<String, Integer> reporterCounter = new HashMap<String, Integer>();
@@ -19,7 +20,7 @@ public class IssueListMetrics {
    * @param originalIssues
    *          List of issues.
    */
-  public IssueListMetrics(String identifier, List<ExtendedIssue> originalIssues) {
+  public IssueListMetricGenerator(String identifier, List<ExtendedIssue> originalIssues) {
     this.identifier = identifier;
     this.originalIssues = originalIssues;
 
@@ -74,28 +75,12 @@ public class IssueListMetrics {
    * 
    * @return Header as String.
    */
-  public static String getMetricHeader() {
-    String header = "";
-    header += "Period Identifier, ";
-    header += "No Priority, ";
-    header += "Blocker, ";
-    header += "Critical, ";
-    header += "Major, ";
-    header += "Minor, ";
-    header += "Trivial, ";
-    header += "Blocker (%), ";
-    header += "Critical (%), ";
-    header += "Major (%), ";
-    header += "Minor (%), ";
-    header += "Trivial (%), ";
-    header += "Total, ";
-    header += "Priority Changes, ";
-    header += "Priority Changes (%), ";
-    header += "Number of Reporters, ";
-    header += "Average Issues per Reporter,";
-    header += "Number of Changers, ";
-    header += "Top Reporter, ";
-    header += "Top Changer, ";
+  public static String[] getMetricHeader() {
+    String[] header = new String[] { "Period Identifier", "No Priority", "Blocker", "Critical",
+        "Major", "Minor", "Trivial", "No Priority (%)", "Blocker (%)", "Critical (%)", "Major (%)",
+        "Minor (%)", "Trivial (%)", "Total", "Priority Changes", "Priority Changes (%)",
+        "Number of Reporters", "Average Issues per Reporter", "Number of Changers", "Top Reporter",
+        "Top Changer" };
 
     return header;
 
@@ -106,34 +91,45 @@ public class IssueListMetrics {
    * 
    * @return String representation of all the metric.
    */
-  public String getMetricsAsString() {
-    String metrics = identifier + ", ";
+  public List<Object> getMetricsAsList() {
+    List<Object> metrics = new ArrayList<>();
 
-    metrics += priorityCounter.get("0") + ", ";
-    metrics += priorityCounter.get("1") + ", ";
-    metrics += priorityCounter.get("2") + ", ";
-    metrics += priorityCounter.get("3") + ", ";
-    metrics += priorityCounter.get("4") + ", ";
-    metrics += priorityCounter.get("5") + ", ";
+    metrics.add(identifier);
+    metrics.add(priorityCounter.get("0"));
+    metrics.add(priorityCounter.get("1"));
+    metrics.add(priorityCounter.get("2"));
+    metrics.add(priorityCounter.get("3"));
+    metrics.add(priorityCounter.get("4"));
+    metrics.add(priorityCounter.get("5"));
 
-    Double total = new Double(this.originalIssues.size());
+    Double total = new Double(getNumberOfIssues());
+    metrics.add(priorityCounter.get("0") / total);
+    metrics.add(priorityCounter.get("1") / total);
+    metrics.add(priorityCounter.get("2") / total);
+    metrics.add(priorityCounter.get("3") / total);
+    metrics.add(priorityCounter.get("4") / total);
+    metrics.add(priorityCounter.get("5") / total);
+    metrics.add(total.intValue());
 
-    metrics += priorityCounter.get("1") / total + ", ";
-    metrics += priorityCounter.get("2") / total + ", ";
-    metrics += priorityCounter.get("3") / total + ", ";
-    metrics += priorityCounter.get("4") / total + ", ";
-    metrics += priorityCounter.get("5") / total + ", ";
-    metrics += total.intValue() + ", ";
-    metrics += this.priorityChanges + ", ";
-    metrics += this.priorityChanges / total + ", ";
-    int numberOfReporters = reporterCounter.keySet().size();
-    metrics += numberOfReporters + ",";
-    metrics += total / numberOfReporters + ",";
-    metrics += changerCounter.keySet().size() + ",";
-    metrics += getMaximumKey(reporterCounter) + ", ";
-    metrics += getMaximumKey(changerCounter) + ", ";
+    metrics.add(this.priorityChanges);
+    metrics.add(this.priorityChanges / total);
 
+    int numberOfReporters = getNumberOfReporters();
+    metrics.add(numberOfReporters);
+    metrics.add(total / numberOfReporters);
+
+    metrics.add(changerCounter.keySet().size());
+    metrics.add(getMaximumKey(reporterCounter));
+    metrics.add(getMaximumKey(changerCounter));
     return metrics;
+  }
+
+  public int getNumberOfReporters() {
+    return reporterCounter.keySet().size();
+  }
+
+  public int getNumberOfIssues() {
+    return this.originalIssues.size();
   }
 
   private String getMaximumKey(HashMap<String, Integer> counterMap) {

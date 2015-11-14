@@ -1,4 +1,4 @@
-package crest.jira.data.miner.report;
+package crest.jira.data.miner.db;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class JiraIssueAnalyzer {
+public class JiraIssueDao {
 
   private String boardId;
   private Dao<Issue, String> issueDao;
@@ -39,7 +39,7 @@ public class JiraIssueAnalyzer {
    * @throws SQLException
    *           In case of SQL errors.
    */
-  public JiraIssueAnalyzer(String boardId, ConnectionSource connectionSource) throws SQLException {
+  public JiraIssueDao(String boardId, ConnectionSource connectionSource) throws SQLException {
     this.boardId = boardId;
     this.issueDao = DaoManager.createDao(connectionSource, Issue.class);
     this.historyDao = DaoManager.createDao(connectionSource, History.class);
