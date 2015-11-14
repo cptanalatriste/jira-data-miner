@@ -59,7 +59,8 @@ public class GenerateConsolidatedFiles {
         new FileWriter(FOLDER_NAME + "Board_" + boardId + "_" + new Date().getTime() + ".csv"));
     try (CSVPrinter csvPrinter = new CSVPrinter(bufferedWriter, csvFileFormat)) {
 
-      csvPrinter.printRecord(IssueListMetricGenerator.getMetricHeader());
+      csvPrinter.printRecord(Arrays.copyOf(IssueListMetricGenerator.getMetricHeader(),
+          IssueListMetricGenerator.getMetricHeader().length, Object[].class));
 
       for (Object oneKey : keysAsArray) {
         String key = (String) oneKey;
