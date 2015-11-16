@@ -78,9 +78,9 @@ public class IssueListMetricGenerator {
   public static String[] getMetricHeader() {
     String[] header = new String[] { "Period Identifier", "No Priority", "Blocker", "Critical",
         "Major", "Minor", "Trivial", "No Priority (%)", "Blocker (%)", "Critical (%)", "Major (%)",
-        "Minor (%)", "Trivial (%)", "Total", "Priority Changes", "Priority Changes (%)",
-        "Number of Reporters", "Average Issues per Reporter", "Number of Changers", "Top Reporter",
-        "Top Changer" };
+        "Minor (%)", "Trivial (%)", "Total", "Non-Severe (%)", "Severe (%)", "Priority Changes",
+        "Priority Changes (%)", "Number of Reporters", "Average Issues per Reporter",
+        "Number of Changers", "Top Reporter", "Top Changer" };
 
     return header;
 
@@ -110,6 +110,8 @@ public class IssueListMetricGenerator {
     metrics.add(priorityCounter.get("4") / total);
     metrics.add(priorityCounter.get("5") / total);
     metrics.add(total.intValue());
+    metrics.add((priorityCounter.get("4") + priorityCounter.get("5")) / total);
+    metrics.add((priorityCounter.get("1") + priorityCounter.get("2")) / total);
 
     metrics.add(this.priorityChanges);
     metrics.add(this.priorityChanges / total);

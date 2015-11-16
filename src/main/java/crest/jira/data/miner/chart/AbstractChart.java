@@ -6,18 +6,18 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.chart.ScatterChart;
-import javafx.scene.chart.XYChart.Data;
-import javafx.scene.chart.XYChart.Series;
-import javafx.stage.Stage;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
+import javafx.stage.Stage;
 
 public abstract class AbstractChart extends Application {
 
@@ -85,7 +85,7 @@ public abstract class AbstractChart extends Application {
    * @param stage
    *          Stage.
    */
-  public static void showChart(ScatterChart<String, Number> scatterChart, String title,
+  public static void showChart(XYChart<String, Number> scatterChart, String title,
       Stage stage) {
     scatterChart.setTitle(title);
     Scene scene = new Scene(scatterChart, 800, 600);
