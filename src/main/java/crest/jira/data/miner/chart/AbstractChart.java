@@ -2,6 +2,13 @@ package crest.jira.data.miner.chart;
 
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
+import javafx.stage.Stage;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -12,17 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Data;
-import javafx.scene.chart.XYChart.Series;
-import javafx.stage.Stage;
-
 public abstract class AbstractChart extends Application {
 
-  private static final String FILE_LOCATION = "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447791806508.csv";
-
+  private static final String FILE_LOCATION = 
+      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447791806508.csv";
   public static final String TIME_PERIOD_LABEL = "Time Period";
   public static final String FREQUENCY_LABEL = "Frequency";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
