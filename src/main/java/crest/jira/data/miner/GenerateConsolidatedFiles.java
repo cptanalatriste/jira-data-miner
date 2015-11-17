@@ -19,7 +19,7 @@ import java.util.List;
 
 public class GenerateConsolidatedFiles {
 
-  private static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/" + "";
+  private static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
   public static final String BOARD_ID = "25";
   private static final String NEW_LINE_SEPARATOR = "\n";
 
@@ -67,6 +67,7 @@ public class GenerateConsolidatedFiles {
 
         List<ExtendedIssue> listOfIssues = (List<ExtendedIssue>) issuesPerTimeFrame.get(oneKey);
         IssueListMetricGenerator metrics = new IssueListMetricGenerator(key, listOfIssues);
+
         csvPrinter.printRecord(metrics.getMetricsAsList());
       }
 

@@ -13,12 +13,15 @@ import java.util.List;
 
 public class ExtendedIssue {
 
+  public static final String NO_PRIORITY_ID = "0";
+
   private static final long MILISECONDS_IN_A_DATE = 24 * 60 * 60 * 1000;
 
   private Issue issue;
   private Priority originalPriority;
   private boolean doesPriorityChanged;
   private double resolutionTime = 0.0;
+  private boolean isResolved = false;
 
   /**
    * Calculates additional fields that are necessary for analysis.
@@ -40,15 +43,22 @@ public class ExtendedIssue {
     if (reportedDate != null && resolutionDate != null) {
       this.resolutionTime = Math.abs(resolutionDate.getTime() - reportedDate.getTime())
           / MILISECONDS_IN_A_DATE;
+      this.isResolved = true;
     }
 
   }
 
   private void loadPriorityProperties() {
     List<TimedChangeLogItem> priorityChanges = new ArrayList<TimedChangeLogItem>();
+    Priority noPriority = new Priority();
+    noPriority.setId(NO_PRIORITY_ID);
 
     this.doesPriorityChanged = false;
-    this.originalPriority = issue.getPriority();
+    this.originalPriority = noPriority;
+
+    if (issue.getPriority() != null) {
+      this.originalPriority = issue.getPriority();
+    }
 
     for (History history : issue.getChangeLog().getValues()) {
       for (ChangeLogItem changeItem : history.getItems()) {
@@ -75,7 +85,10 @@ public class ExtendedIssue {
       this.originalPriority.setId(firstChange.getChangeLogItem().getFrom());
       this.originalPriority.setName(firstChange.getChangeLogItem().getFromString());
     }
+  }
 
+  public boolean isResolved() {
+    return isResolved;
   }
 
   public Double getResolutionTime() {

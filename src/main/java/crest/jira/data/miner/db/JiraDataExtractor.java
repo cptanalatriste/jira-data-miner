@@ -168,11 +168,6 @@ public class JiraDataExtractor {
     Arrays.sort(allBoards.getValues(), comparator);
 
     for (Board board : allBoards.getValues()) {
-      // TODO(cgavidia): This is temporary. Remove later.
-      if ("45".compareTo(board.getId()) > 0) {
-        continue;
-      }
-
       readAndWriteEpicData(board.getId());
       clearBeforeLoading(board.getId());
       ResponseList<Sprint> sprints = readAndWriteSprintData(board.getId());
@@ -222,8 +217,6 @@ public class JiraDataExtractor {
 
     ResponseList<Sprint> sprints = sprintRetriever.getAllSprints(boardId);
 
-    // TODO(cgavidia): BIG TODO!! Many boards doesn't support sprints! We need
-    // to retrieves Issues directly from the Board.
     if (sprints != null) {
       sprintMiner.writeToDatabase(sprints);
     }
