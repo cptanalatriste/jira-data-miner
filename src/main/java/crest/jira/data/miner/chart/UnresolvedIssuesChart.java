@@ -8,14 +8,14 @@ import javafx.stage.Stage;
 
 import java.util.Map;
 
-public class PriorityRelativeFrequenciesChart extends AbstractChart {
+public class UnresolvedIssuesChart extends AbstractChart {
 
   private static final String PERIOD_IDENTIFIER = "Period Identifier";
-  private static final String BLOCKER_IDENTIFIER = "Blocker (%)";
-  private static final String CRITICAL_IDENTIFIER = "Critical (%)";
-  private static final String MAJOR_IDENTIFIER = "Major (%)";
-  private static final String MINOR_IDENTIFIER = "Minor (%)";
-  private static final String TRIVIAL_IDENTIFIER = "Trivial (%)";
+  private static final String BLOCKER_IDENTIFIER = "Blocker Unresolved (%)";
+  private static final String CRITICAL_IDENTIFIER = "Critical Unresolved (%)";
+  private static final String MINOR_IDENTIFIER = "Minor Unresolved (%)";
+  private static final String TRIVIAL_IDENTIFIER = "Trivial Unresolved (%)";
+  private static final String MAJOR_IDENTIFIER = "Major Unresolved (%)";
 
   public static void main(String... args) {
     launch(args);
@@ -41,6 +41,8 @@ public class PriorityRelativeFrequenciesChart extends AbstractChart {
         MINOR_IDENTIFIER, TRIVIAL_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
-    showChart(scatterChart, "Relative Frequency according Priority", stage);
+    showChart(scatterChart, "Unresolved Issues Percentage", stage);
+
   }
+
 }

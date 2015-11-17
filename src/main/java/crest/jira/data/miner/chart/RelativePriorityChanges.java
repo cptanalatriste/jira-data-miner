@@ -10,8 +10,6 @@ import java.util.Map;
 
 public class RelativePriorityChanges extends AbstractChart {
 
-  private static final String FILE_LOCATION = 
-      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447519453706.csv";
   private static final String PERIOD_IDENTIFIER = "Period Identifier";
   private static final String PRIORITY_CHANGES_IDENTIFIER = "Priority Changes (%)";
 
@@ -34,8 +32,8 @@ public class RelativePriorityChanges extends AbstractChart {
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(FILE_LOCATION, PERIOD_IDENTIFIER,
-        PRIORITY_CHANGES_IDENTIFIER);
+    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+        PERIOD_IDENTIFIER, PRIORITY_CHANGES_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
     showChart(scatterChart, "Priority Changes as Percentage", stage);

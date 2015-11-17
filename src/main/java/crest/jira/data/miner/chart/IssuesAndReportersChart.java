@@ -10,16 +10,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
-
 public class IssuesAndReportersChart extends AbstractChart {
 
   private static final String NUMBER_REPORTERS_IDENTIFIER = "Number of Reporters";
   private static final String TOTAL_IDENTIFIER = "Total";
   private static final String PERIOD_IDENTIFIER = "Period Identifier";
   private static final String ISSUES_PER_REPORTER_IDENTIFIER = "Average Issues per Reporter";
-
-  private static final String FILE_LOCATION = 
-      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447519453706.csv";
 
   public static void main(String... args) {
     launch(args);
@@ -41,8 +37,9 @@ public class IssuesAndReportersChart extends AbstractChart {
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(FILE_LOCATION, PERIOD_IDENTIFIER,
-        TOTAL_IDENTIFIER, NUMBER_REPORTERS_IDENTIFIER, ISSUES_PER_REPORTER_IDENTIFIER);
+    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+        PERIOD_IDENTIFIER, TOTAL_IDENTIFIER, NUMBER_REPORTERS_IDENTIFIER,
+        ISSUES_PER_REPORTER_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
     showChart(scatterChart, "Issues and Reporters", stage);

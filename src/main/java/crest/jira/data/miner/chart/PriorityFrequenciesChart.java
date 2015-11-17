@@ -1,6 +1,5 @@
 package crest.jira.data.miner.chart;
 
-
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
@@ -11,8 +10,6 @@ import java.util.Map;
 
 public class PriorityFrequenciesChart extends AbstractChart {
 
-  private static final String FILE_LOCATION = 
-      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447519453706.csv";
   private static final String PERIOD_IDENTIFIER = "Period Identifier";
   private static final String BLOCKER_IDENTIFIER = "Blocker";
   private static final String CRITICAL_IDENTIFIER = "Critical";
@@ -39,9 +36,9 @@ public class PriorityFrequenciesChart extends AbstractChart {
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(FILE_LOCATION, PERIOD_IDENTIFIER,
-        BLOCKER_IDENTIFIER, CRITICAL_IDENTIFIER, MAJOR_IDENTIFIER, MINOR_IDENTIFIER,
-        TRIVIAL_IDENTIFIER);
+    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+        PERIOD_IDENTIFIER, BLOCKER_IDENTIFIER, CRITICAL_IDENTIFIER, MAJOR_IDENTIFIER,
+        MINOR_IDENTIFIER, TRIVIAL_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
     showChart(scatterChart, "Frequency according Priority", stage);

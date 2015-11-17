@@ -21,12 +21,18 @@ import javafx.stage.Stage;
 
 public abstract class AbstractChart extends Application {
 
+  private static final String FILE_LOCATION = "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447791806508.csv";
+
   public static final String TIME_PERIOD_LABEL = "Time Period";
   public static final String FREQUENCY_LABEL = "Frequency";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
 
   public static void main(String... args) {
     launch(args);
+  }
+
+  public static String getCsvFileLocation() {
+    return FILE_LOCATION;
   }
 
   /**
@@ -85,8 +91,7 @@ public abstract class AbstractChart extends Application {
    * @param stage
    *          Stage.
    */
-  public static void showChart(XYChart<String, Number> scatterChart, String title,
-      Stage stage) {
+  public static void showChart(XYChart<String, Number> scatterChart, String title, Stage stage) {
     scatterChart.setTitle(title);
     Scene scene = new Scene(scatterChart, 800, 600);
     stage.setScene(scene);

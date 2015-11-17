@@ -8,14 +8,14 @@ import javafx.stage.Stage;
 
 import java.util.Map;
 
-public class PriorityRelativeFrequenciesChart extends AbstractChart {
+public class AverageResolutionTimeChart extends AbstractChart {
 
   private static final String PERIOD_IDENTIFIER = "Period Identifier";
-  private static final String BLOCKER_IDENTIFIER = "Blocker (%)";
-  private static final String CRITICAL_IDENTIFIER = "Critical (%)";
-  private static final String MAJOR_IDENTIFIER = "Major (%)";
-  private static final String MINOR_IDENTIFIER = "Minor (%)";
-  private static final String TRIVIAL_IDENTIFIER = "Trivial (%)";
+  private static final String BLOCKER_IDENTIFIER = "Blocker Resolution Time (avg)";
+  private static final String CRITICAL_IDENTIFIER = "Critical Resolution Time (avg)";
+  private static final String MINOR_IDENTIFIER = "Minor Resolution Time (avg)";
+  private static final String TRIVIAL_IDENTIFIER = "Trivial Resolution Time (avg)";
+  private static final String MAJOR_IDENTIFIER = "Major Resolution Time (avg)";
 
   public static void main(String... args) {
     launch(args);
@@ -31,7 +31,7 @@ public class PriorityRelativeFrequenciesChart extends AbstractChart {
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
     NumberAxis counterAxis = new NumberAxis();
-    counterAxis.setLabel(RELATIVE_FREQUENCY_LABEL);
+    counterAxis.setLabel(FREQUENCY_LABEL);
 
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
@@ -41,6 +41,8 @@ public class PriorityRelativeFrequenciesChart extends AbstractChart {
         MINOR_IDENTIFIER, TRIVIAL_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
-    showChart(scatterChart, "Relative Frequency according Priority", stage);
+    showChart(scatterChart, "Average Resolution Time", stage);
+
   }
+
 }
