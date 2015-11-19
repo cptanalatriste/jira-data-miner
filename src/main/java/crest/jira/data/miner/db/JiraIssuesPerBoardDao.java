@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class JiraIssueDao {
+public class JiraIssuesPerBoardDao {
 
   private String boardId;
   private Dao<Issue, String> issueDao;
@@ -39,7 +39,8 @@ public class JiraIssueDao {
    * @throws SQLException
    *           In case of SQL errors.
    */
-  public JiraIssueDao(String boardId, ConnectionSource connectionSource) throws SQLException {
+  public JiraIssuesPerBoardDao(String boardId, ConnectionSource connectionSource)
+      throws SQLException {
     this.boardId = boardId;
     this.issueDao = DaoManager.createDao(connectionSource, Issue.class);
     this.historyDao = DaoManager.createDao(connectionSource, History.class);
@@ -97,7 +98,7 @@ public class JiraIssueDao {
    * @return A MultiValueMap, where the frame identified is the key.
    */
   public MultiValueMap<String, ExtendedIssue> organizeTimeFrames() {
-    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame =
+    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = 
         new MultiValueMap<String, ExtendedIssue>();
 
     for (ExtendedIssue issue : issueList) {

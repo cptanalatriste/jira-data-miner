@@ -1,9 +1,14 @@
 package crest.jira.data.miner;
 
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.support.ConnectionSource;
+
 import crest.jira.data.miner.config.ConfigurationProvider;
-import crest.jira.data.miner.db.JiraIssueDao;
+import crest.jira.data.miner.db.JiraIssuesPerBoardDao;
 import crest.jira.data.miner.report.model.ExtendedIssue;
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
+import crest.jira.data.retriever.model.Board;
 
 import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.commons.csv.CSVFormat;
@@ -20,8 +25,9 @@ import java.util.List;
 public class GenerateConsolidatedFiles {
 
   private static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  public static final String BOARD_ID = "25";
   private static final String NEW_LINE_SEPARATOR = "\n";
+
+  private static Dao<Board, String> boardDao;
 
   /**
    * Analyzes the Testers moves per time frame. *
@@ -38,16 +44,22 @@ public class GenerateConsolidatedFiles {
   public static void main(String[] args) throws SQLException, SecurityException, IOException {
 
     ConfigurationProvider configProvider = new ConfigurationProvider();
-    JiraIssueDao analyser = new JiraIssueDao(BOARD_ID, configProvider.getConnectionSource());
-    analyser.loadIssues();
+    ConnectionSource connectionSource = configProvider.getConnectionSource();
 
-    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = analyser.organizeTimeFrames();
+    boardDao = DaoManager.createDao(connectionSource, Board.class);
+    List<Board> allBoards = boardDao.queryForAll();
+    for (Board board : allBoards) {
+      String boardId = board.getId();
+      JiraIssuesPerBoardDao analyser = new JiraIssuesPerBoardDao(boardId, connectionSource);
+      analyser.loadIssues();
 
-    Object[] keysAsArray = issuesPerTimeFrame.keySet().toArray();
-    Arrays.sort(keysAsArray);
+      MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = analyser.organizeTimeFrames();
 
-    generateCsvFile(BOARD_ID, keysAsArray, issuesPerTimeFrame);
+      Object[] keysAsArray = issuesPerTimeFrame.keySet().toArray();
+      Arrays.sort(keysAsArray);
 
+      generateCsvFile(boardId, keysAsArray, issuesPerTimeFrame);
+    }
   }
 
   @SuppressWarnings("unchecked")

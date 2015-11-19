@@ -21,8 +21,14 @@ import java.util.Map;
 
 public abstract class AbstractChart extends Application {
 
+  //Promising Boards -> 2
+  
+  
+   //private static final String FILE_LOCATION =
+   //"C:/Users/cgavi/OneDrive/phd2/jira_data/Board_18_1447800268607.csv";
   private static final String FILE_LOCATION = 
-      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_25_1447791806508.csv";
+      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_2_1447800265535.csv";
+
   public static final String TIME_PERIOD_LABEL = "Time Period";
   public static final String FREQUENCY_LABEL = "Frequency";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
@@ -92,7 +98,7 @@ public abstract class AbstractChart extends Application {
    *          Stage.
    */
   public static void showChart(XYChart<String, Number> scatterChart, String title, Stage stage) {
-    scatterChart.setTitle(title);
+    scatterChart.setTitle(title + " - " + getCsvFileLocation());
     Scene scene = new Scene(scatterChart, 800, 600);
     stage.setScene(scene);
     stage.show();
