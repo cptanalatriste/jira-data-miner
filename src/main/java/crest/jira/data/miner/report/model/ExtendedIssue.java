@@ -42,7 +42,7 @@ public class ExtendedIssue {
 
     if (reportedDate != null && resolutionDate != null) {
       this.resolutionTime = Math.abs(resolutionDate.getTime() - reportedDate.getTime())
-          / MILISECONDS_IN_A_DATE;
+          / new Double(MILISECONDS_IN_A_DATE);
       this.isResolved = true;
     }
 

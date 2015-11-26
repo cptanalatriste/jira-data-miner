@@ -1,5 +1,7 @@
 package crest.jira.data.miner.report.model;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,7 +21,7 @@ public class IssueListMetricGenerator {
   private int priorityChanges = 0;
   private HashMap<String, Double> resolvedCounter = new HashMap<String, Double>();
   private HashMap<String, Double> unresolvedCounter = new HashMap<String, Double>();
-  private HashMap<String, Double> timePerPriorityCounter = new HashMap<String, Double>();
+  private HashMap<String, DescriptiveStatistics> timePerPriorityCounter = new HashMap<>();
   private List<ExtendedIssue> originalIssues;
   private String identifier;
 
@@ -36,9 +38,15 @@ public class IssueListMetricGenerator {
     initializePriorityCounter(priorityCounter);
     initializePriorityCounter(resolvedCounter);
     initializePriorityCounter(unresolvedCounter);
-    initializePriorityCounter(timePerPriorityCounter);
+    initializePriorityStatistics(timePerPriorityCounter);
 
     calculateMetrics();
+  }
+
+  private void initializePriorityStatistics(HashMap<String, DescriptiveStatistics> counterMap) {
+    for (String priority : supportedPriorities) {
+      counterMap.put(priority, new DescriptiveStatistics());
+    }
   }
 
   private void initializePriorityCounter(HashMap<String, Double> counterMap) {
@@ -59,8 +67,15 @@ public class IssueListMetricGenerator {
 
     if (extendedIssue.isResolved()) {
       updateCounterMap(originalPriorityId, resolvedCounter);
-      updateCounterMap(originalPriorityId, timePerPriorityCounter,
-          extendedIssue.getResolutionTime());
+
+      // TODO(cgavidia): Only for testing
+      if ("3".equals(originalPriorityId)) {
+        System.out
+            .println("identifier " + this.identifier + " originalPriorityId " + originalPriorityId
+                + " extendedIssue.getResolutionTime() " + extendedIssue.getResolutionTime());
+      }
+
+      timePerPriorityCounter.get(originalPriorityId).addValue(extendedIssue.getResolutionTime());
     } else {
       updateCounterMap(originalPriorityId, unresolvedCounter);
     }
@@ -99,6 +114,9 @@ public class IssueListMetricGenerator {
       headerAsString.add(priorityDescription + " Unresolved");
       headerAsString.add(priorityDescription + " Unresolved (%)");
       headerAsString.add(priorityDescription + " Resolution Time (avg)");
+      headerAsString.add(priorityDescription + " Resolution Time (med)");
+      headerAsString.add(priorityDescription + " Resolution Time (std)");
+
     }
 
     headerAsString.addAll(Arrays.asList("Total", "Non-Severe (%)", "Severe (%)", "Priority Changes",
@@ -138,9 +156,20 @@ public class IssueListMetricGenerator {
           ? unresolvedPerPriority / new Double(frequencyPerPriority) : 0;
       metrics.add(relativeUnresolved);
 
-      double averageTime = frequencyPerPriority != 0
-          ? timePerPriorityCounter.get(priority) / frequencyPerPriority : 0;
-      metrics.add(averageTime);
+      DescriptiveStatistics timeDescriptiveStats = timePerPriorityCounter.get(priority);
+      double mean = 0.0;
+      double median = 0.0;
+      double standardDeviation = 0.0;
+
+      if (timeDescriptiveStats.getValues().length > 0) {
+        mean = timeDescriptiveStats.getMean();
+        median = timeDescriptiveStats.getPercentile(50);
+        standardDeviation = timeDescriptiveStats.getStandardDeviation();
+      }
+
+      metrics.add(mean);
+      metrics.add(median);
+      metrics.add(standardDeviation);
     }
 
     metrics.add(numberOfIssues.intValue());

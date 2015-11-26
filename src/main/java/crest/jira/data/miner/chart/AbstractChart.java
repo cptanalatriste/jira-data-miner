@@ -21,13 +21,8 @@ import java.util.Map;
 
 public abstract class AbstractChart extends Application {
 
-  //Promising Boards -> 2
-  
-  
-   //private static final String FILE_LOCATION =
-   //"C:/Users/cgavi/OneDrive/phd2/jira_data/Board_18_1447800268607.csv";
   private static final String FILE_LOCATION = 
-      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_2_1447800265535.csv";
+      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_2_1447972400459.csv";
 
   public static final String TIME_PERIOD_LABEL = "Time Period";
   public static final String FREQUENCY_LABEL = "Frequency";

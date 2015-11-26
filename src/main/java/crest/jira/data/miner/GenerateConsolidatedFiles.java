@@ -50,15 +50,19 @@ public class GenerateConsolidatedFiles {
     List<Board> allBoards = boardDao.queryForAll();
     for (Board board : allBoards) {
       String boardId = board.getId();
-      JiraIssuesPerBoardDao analyser = new JiraIssuesPerBoardDao(boardId, connectionSource);
-      analyser.loadIssues();
 
-      MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = analyser.organizeTimeFrames();
+      // TODO(cgavidia): Only for testing
+      if ("2".equals(boardId)) {
+        JiraIssuesPerBoardDao analyser = new JiraIssuesPerBoardDao(boardId, connectionSource);
+        analyser.loadIssues();
 
-      Object[] keysAsArray = issuesPerTimeFrame.keySet().toArray();
-      Arrays.sort(keysAsArray);
+        MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = analyser.organizeTimeFrames();
 
-      generateCsvFile(boardId, keysAsArray, issuesPerTimeFrame);
+        Object[] keysAsArray = issuesPerTimeFrame.keySet().toArray();
+        Arrays.sort(keysAsArray);
+
+        generateCsvFile(boardId, keysAsArray, issuesPerTimeFrame);
+      }
     }
   }
 
