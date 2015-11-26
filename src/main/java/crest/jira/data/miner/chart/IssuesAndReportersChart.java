@@ -42,7 +42,7 @@ public class IssuesAndReportersChart extends AbstractChart {
         ISSUES_PER_REPORTER_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
-    showChart(scatterChart, "Issues and Reporters", stage);
+    showAndSaveChart(scatterChart, "Issues and Reporters", stage);
   }
 
 }

@@ -3,26 +3,36 @@ package crest.jira.data.miner.chart;
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import javax.imageio.ImageIO;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractChart extends Application {
 
-  private static final String FILE_LOCATION = 
-      "C:/Users/cgavi/OneDrive/phd2/jira_data/Board_2_1447972400459.csv";
+  private static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
+  private static final String FILE_NAME = "Board_35_1448577282680";
+  private static final String CSV_EXTENSION = ".csv";
+  private static final String PNG_EXTENSION = ".png";
 
   public static final String TIME_PERIOD_LABEL = "Time Period";
   public static final String FREQUENCY_LABEL = "Frequency";
@@ -33,7 +43,7 @@ public abstract class AbstractChart extends Application {
   }
 
   public static String getCsvFileLocation() {
-    return FILE_LOCATION;
+    return DIRECTORY + FILE_NAME + CSV_EXTENSION;
   }
 
   /**
@@ -85,17 +95,26 @@ public abstract class AbstractChart extends Application {
   /**
    * Assigns a title to a chart and shows it on the Screen.
    * 
-   * @param scatterChart
+   * @param chart
    *          Chart.
    * @param title
    *          Title.
    * @param stage
    *          Stage.
+   * @throws IOException
+   *           Image writing might fail.
    */
-  public static void showChart(XYChart<String, Number> scatterChart, String title, Stage stage) {
-    scatterChart.setTitle(title + " - " + getCsvFileLocation());
-    Scene scene = new Scene(scatterChart, 800, 600);
+  public static void showAndSaveChart(XYChart<String, Number> chart, String title, Stage stage)
+      throws IOException {
+    chart.setTitle(title + " - " + FILE_NAME);
+    Scene scene = new Scene(chart, 800, 600);
     stage.setScene(scene);
+    stage.setMaximized(true);
     stage.show();
+
+    WritableImage writableImage = chart.snapshot(new SnapshotParameters(), null);
+    File file = new File(DIRECTORY + FILE_NAME + PNG_EXTENSION);
+    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
   }
+
 }

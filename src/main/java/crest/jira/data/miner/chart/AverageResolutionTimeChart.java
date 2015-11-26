@@ -6,6 +6,7 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class AverageResolutionTimeChart extends AbstractChart {
@@ -26,7 +27,7 @@ public class AverageResolutionTimeChart extends AbstractChart {
     buildChart(stage);
   }
 
-  private void buildChart(Stage stage) {
+  private void buildChart(Stage stage) throws IOException {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
@@ -41,7 +42,7 @@ public class AverageResolutionTimeChart extends AbstractChart {
         MINOR_IDENTIFIER, TRIVIAL_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
-    showChart(scatterChart, "Average Resolution Time", stage);
+    showAndSaveChart(scatterChart, "Average Resolution Time", stage);
 
   }
 

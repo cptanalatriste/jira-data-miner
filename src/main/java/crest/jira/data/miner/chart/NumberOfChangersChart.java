@@ -6,6 +6,7 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class NumberOfChangersChart extends AbstractChart {
@@ -22,7 +23,7 @@ public class NumberOfChangersChart extends AbstractChart {
     buildChart(stage);
   }
 
-  private void buildChart(Stage stage) {
+  private void buildChart(Stage stage) throws IOException {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
@@ -36,6 +37,6 @@ public class NumberOfChangersChart extends AbstractChart {
         PERIOD_IDENTIFIER, CHANGERS_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
-    showChart(scatterChart, "Number of Changers", stage);
+    showAndSaveChart(scatterChart, "Number of Changers", stage);
   }
 }

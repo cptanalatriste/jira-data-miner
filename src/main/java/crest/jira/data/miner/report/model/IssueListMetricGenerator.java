@@ -67,14 +67,6 @@ public class IssueListMetricGenerator {
 
     if (extendedIssue.isResolved()) {
       updateCounterMap(originalPriorityId, resolvedCounter);
-
-      // TODO(cgavidia): Only for testing
-      if ("3".equals(originalPriorityId)) {
-        System.out
-            .println("identifier " + this.identifier + " originalPriorityId " + originalPriorityId
-                + " extendedIssue.getResolutionTime() " + extendedIssue.getResolutionTime());
-      }
-
       timePerPriorityCounter.get(originalPriorityId).addValue(extendedIssue.getResolutionTime());
     } else {
       updateCounterMap(originalPriorityId, unresolvedCounter);

@@ -6,6 +6,7 @@ import javafx.scene.chart.StackedAreaChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class ConsolidatedSeverityChart extends AbstractChart {
@@ -24,7 +25,7 @@ public class ConsolidatedSeverityChart extends AbstractChart {
     buildChart(stage);
   }
 
-  private void buildChart(Stage stage) {
+  private void buildChart(Stage stage) throws IOException {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
@@ -39,7 +40,7 @@ public class ConsolidatedSeverityChart extends AbstractChart {
         HIGH_SEVERITY_IDENTIFIER);
     stackAreaChart.getData().addAll(chartSeries.values());
 
-    showChart(stackAreaChart, "Consolidated Severity", stage);
+    showAndSaveChart(stackAreaChart, "Consolidated Severity", stage);
 
   }
 }

@@ -23,6 +23,7 @@ import java.util.List;
 
 public class JiraIssuesPerBoardDao {
 
+  private static final String BUG_ISSUE_TYPE = "1";
   private String boardId;
   private Dao<Issue, String> issueDao;
   private Dao<History, String> historyDao;
@@ -53,17 +54,25 @@ public class JiraIssuesPerBoardDao {
    * @throws SQLException
    *           In case of problems.
    */
-  public void loadIssues(Object... reporters) throws SQLException {
+  public void loadIssues(boolean onlyBugs, Object... reporters) throws SQLException {
     QueryBuilder<Issue, String> queryBuilder = issueDao.queryBuilder();
     Where<Issue, String> whereClause = queryBuilder.where();
 
     whereClause.eq("boardId", this.boardId);
-    if (reporters != null && reporters.length > 0) {
+
+    boolean filterByReporters = reporters != null && reporters.length > 0;
+    if (onlyBugs || filterByReporters) {
       whereClause.and();
+    }
+
+    if (filterByReporters) {
       whereClause.in("reporterId", reporters);
     }
-    queryBuilder.orderBy("created", true);
+    if (onlyBugs) {
+      whereClause.eq("issueTypeId", BUG_ISSUE_TYPE);
+    }
 
+    queryBuilder.orderBy("created", true);
     PreparedQuery<Issue> preparedQuery = queryBuilder.prepare();
 
     List<Issue> issuesFromDb = issueDao.query(preparedQuery);
@@ -98,8 +107,7 @@ public class JiraIssuesPerBoardDao {
    * @return A MultiValueMap, where the frame identified is the key.
    */
   public MultiValueMap<String, ExtendedIssue> organizeTimeFrames() {
-    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = 
-        new MultiValueMap<String, ExtendedIssue>();
+    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = new MultiValueMap<>();
 
     for (ExtendedIssue issue : issueList) {
       String timeFrameKey = getTimeFrameKey(issue);

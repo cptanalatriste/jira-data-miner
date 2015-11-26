@@ -6,6 +6,7 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class RelativePriorityChanges extends AbstractChart {
@@ -22,7 +23,7 @@ public class RelativePriorityChanges extends AbstractChart {
     buildChart(stage);
   }
 
-  private void buildChart(Stage stage) {
+  private void buildChart(Stage stage) throws IOException {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
@@ -36,6 +37,6 @@ public class RelativePriorityChanges extends AbstractChart {
         PERIOD_IDENTIFIER, PRIORITY_CHANGES_IDENTIFIER);
     scatterChart.getData().addAll(chartSeries.values());
 
-    showChart(scatterChart, "Priority Changes as Percentage", stage);
+    showAndSaveChart(scatterChart, "Priority Changes as Percentage", stage);
   }
 }

@@ -49,21 +49,21 @@ public class GenerateConsolidatedFiles {
     boardDao = DaoManager.createDao(connectionSource, Board.class);
     List<Board> allBoards = boardDao.queryForAll();
     for (Board board : allBoards) {
-      String boardId = board.getId();
-
-      // TODO(cgavidia): Only for testing
-      if ("2".equals(boardId)) {
-        JiraIssuesPerBoardDao analyser = new JiraIssuesPerBoardDao(boardId, connectionSource);
-        analyser.loadIssues();
-
-        MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = analyser.organizeTimeFrames();
-
-        Object[] keysAsArray = issuesPerTimeFrame.keySet().toArray();
-        Arrays.sort(keysAsArray);
-
-        generateCsvFile(boardId, keysAsArray, issuesPerTimeFrame);
-      }
+      processBoard(connectionSource, board.getId(), false);
     }
+  }
+
+  private static void processBoard(ConnectionSource connectionSource, String boardId,
+      boolean onlyBugs) throws SQLException, IOException {
+    JiraIssuesPerBoardDao analyser = new JiraIssuesPerBoardDao(boardId, connectionSource);
+    analyser.loadIssues(onlyBugs);
+
+    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = analyser.organizeTimeFrames();
+
+    Object[] keysAsArray = issuesPerTimeFrame.keySet().toArray();
+    Arrays.sort(keysAsArray);
+
+    generateCsvFile(boardId, keysAsArray, issuesPerTimeFrame);
   }
 
   @SuppressWarnings("unchecked")

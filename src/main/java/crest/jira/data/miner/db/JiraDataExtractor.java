@@ -102,6 +102,39 @@ public class JiraDataExtractor {
     setupDatabase(connectionSource);
     readAndWriteBoardData();
   }
+  
+
+  private static void readAndWriteBoardData() throws Exception {
+
+    BoardRetriever boardRetriever = new BoardRetriever(restClient, jiraConfiguration, fields);
+    ResponseList<Board> allBoards = boardRetriever.getAllBoards();
+    boardMiner.writeToDatabase(allBoards);
+
+    int issuesWritten = 0;
+
+    Comparator<Board> comparator = new Comparator<Board>() {
+
+      public int compare(Board oneBoard, Board anotherBoard) {
+        return oneBoard.getId().compareTo(anotherBoard.getId());
+      }
+    };
+    Arrays.sort(allBoards.getValues(), comparator);
+
+    for (Board board : allBoards.getValues()) {
+      issuesWritten = processBoard(board.getId());
+      if (MAX_ISSUES != null && issuesWritten >= MAX_ISSUES) {
+        logger.info(issuesWritten + " were written on the Database.");
+        return;
+      }
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static void readAndWriteBoardData(String... mesosBoards) throws SQLException, Exception {
+    for (String boardId : mesosBoards) {
+      processBoard(boardId);
+    }
+  }
 
   private static void setupHttpConnection() {
     jiraConfiguration = configurationProvider.getJiraApiConfiguration();
@@ -151,44 +184,38 @@ public class JiraDataExtractor {
         ClosedSprintPerIssue.class, connectionSource);
   }
 
-  private static void readAndWriteBoardData() throws Exception {
 
-    BoardRetriever boardRetriever = new BoardRetriever(restClient, jiraConfiguration, fields);
-    ResponseList<Board> allBoards = boardRetriever.getAllBoards();
-    boardMiner.writeToDatabase(allBoards);
-
-    int issuesWritten = 0;
-
-    Comparator<Board> comparator = new Comparator<Board>() {
-
-      public int compare(Board oneBoard, Board anotherBoard) {
-        return oneBoard.getId().compareTo(anotherBoard.getId());
-      }
-    };
-    Arrays.sort(allBoards.getValues(), comparator);
-
-    for (Board board : allBoards.getValues()) {
-      readAndWriteEpicData(board.getId());
-      clearBeforeLoading(board.getId());
-      ResponseList<Sprint> sprints = readAndWriteSprintData(board.getId());
-      issuesWritten += readAndWriteIssueData(board.getId(),
-          sprints != null ? sprints.getValues() : null);
-
-      if (MAX_ISSUES != null && issuesWritten >= MAX_ISSUES) {
-        logger.info(issuesWritten + " were written on the Database.");
-        return;
-      }
-    }
+  private static int processBoard(String boardId) throws Exception, SQLException {
+    readAndWriteEpicData(boardId);
+    clearBeforeLoading(boardId);
+    ResponseList<Sprint> sprints = readAndWriteSprintData(boardId);
+    int issuesWritten = readAndWriteIssueData(boardId,
+        sprints != null ? sprints.getValues() : null);
+    return issuesWritten;
   }
 
   private static int readAndWriteIssueData(String boardId, Sprint[] sprints) throws Exception {
     BoardRetriever boardRetriever = new BoardRetriever(restClient, jiraConfiguration, fields);
 
     int issueCounter = 0;
+    List<IssueWithCustomFields> issuesFound = new ArrayList<>();
     List<IssueWithCustomFields> issuesPerBoard = boardRetriever.getIssuesForBoard(boardId,
         CHANGELOG_EXPAND);
+    issuesFound.addAll(issuesPerBoard);
 
-    issueCounter += processIssueList(boardId, issuesPerBoard);
+    if (issuesFound.isEmpty() && sprints != null && sprints.length > 0) {
+      logger.info("Couldn't retrieve issues per Board on " + boardId + ". Trying from Sprints...");
+      SprintRetriever sprintRetriever = new SprintRetriever(restClient, jiraConfiguration, fields);
+
+      for (Sprint sprint : sprints) {
+        issuesFound
+            .addAll(sprintRetriever.getIssuesForSprint(boardId, sprint.getId(), CHANGELOG_EXPAND));
+      }
+    }
+
+    issueCounter = processIssueList(boardId, issuesFound);
+    logger.info("Issues written for board " + boardId + ": " + issueCounter);
+
     return issueCounter;
   }
 
