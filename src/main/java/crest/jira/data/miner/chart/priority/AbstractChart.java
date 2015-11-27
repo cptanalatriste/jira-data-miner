@@ -2,6 +2,7 @@ package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
+
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -30,11 +31,12 @@ import javax.imageio.ImageIO;
 public abstract class AbstractChart extends Application {
 
   private static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  private static final String FILE_NAME = "Board_35_1448577282680";
+  private static final String FILE_NAME = "Board_35_1448661676466";
   private static final String CSV_EXTENSION = ".csv";
   private static final String PNG_EXTENSION = ".png";
 
   public static final String TIME_PERIOD_LABEL = "Time Period";
+  public static final String BOARD_LABEL = "Board";
   public static final String FREQUENCY_LABEL = "Frequency";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
 
@@ -116,6 +118,7 @@ public abstract class AbstractChart extends Application {
 
     String chartTitle = title + " - " + FILE_NAME;
     chart.setTitle(chartTitle);
+
     Scene scene = new Scene(chart, 800, 600);
     stage.setScene(scene);
     stage.setMaximized(true);

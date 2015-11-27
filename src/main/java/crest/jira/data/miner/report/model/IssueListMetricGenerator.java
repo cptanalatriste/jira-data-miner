@@ -1,12 +1,12 @@
 package crest.jira.data.miner.report.model;
 
+import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,13 +38,13 @@ public class IssueListMetricGenerator {
   public static final String PRIORITY_CHANGES_IDENTIFIER = "Priority Changes";
   public static final String RELATIVE_PRIORITY_CHANGES_IDENTIFIER = "Priority Changes (%)";
 
-  private HashMap<String, Double> priorityCounter = new HashMap<String, Double>();
-  private HashMap<String, Double> reporterCounter = new HashMap<String, Double>();
-  private HashMap<String, Double> changerCounter = new HashMap<String, Double>();
+  private Frequency priorityFrequency = new Frequency();
+  private Frequency reporterFrequency = new Frequency();
+  private Frequency changerFrequency = new Frequency();
+  private Frequency resolvedFrequency = new Frequency();
+  private Frequency unresolvedFrequency = new Frequency();
 
   private int priorityChanges = 0;
-  private HashMap<String, Double> resolvedCounter = new HashMap<String, Double>();
-  private HashMap<String, Double> unresolvedCounter = new HashMap<String, Double>();
   private HashMap<String, DescriptiveStatistics> timePerPriorityCounter = new HashMap<>();
   private List<ExtendedIssue> originalIssues;
   private String identifier;
@@ -58,24 +58,13 @@ public class IssueListMetricGenerator {
   public IssueListMetricGenerator(String identifier, List<ExtendedIssue> originalIssues) {
     this.identifier = identifier;
     this.originalIssues = originalIssues;
-
-    initializePriorityCounter(priorityCounter);
-    initializePriorityCounter(resolvedCounter);
-    initializePriorityCounter(unresolvedCounter);
     initializePriorityStatistics(timePerPriorityCounter);
-
     calculateMetrics();
   }
 
   private void initializePriorityStatistics(HashMap<String, DescriptiveStatistics> counterMap) {
     for (String priority : PRIORITIES) {
       counterMap.put(priority, new DescriptiveStatistics());
-    }
-  }
-
-  private void initializePriorityCounter(HashMap<String, Double> counterMap) {
-    for (String priority : PRIORITIES) {
-      counterMap.put(priority, 0.0);
     }
   }
 
@@ -95,26 +84,26 @@ public class IssueListMetricGenerator {
     String originalPriorityId = extendedIssue.getOriginalPriority().getId();
 
     if (extendedIssue.isResolved()) {
-      updateCounterMap(originalPriorityId, resolvedCounter);
+      resolvedFrequency.addValue(originalPriorityId);
 
       DescriptiveStatistics counterPerPriority = timePerPriorityCounter.get(originalPriorityId);
       counterPerPriority.addValue(extendedIssue.getResolutionTime());
     } else {
-      updateCounterMap(originalPriorityId, unresolvedCounter);
+      unresolvedFrequency.addValue(originalPriorityId);
     }
   }
 
   private void calculatePriorityMetrics(ExtendedIssue extendedIssue) {
 
     String reporterName = extendedIssue.getIssue().getReporter().getName();
-    updateCounterMap(reporterName, reporterCounter);
+    reporterFrequency.addValue(reporterName);
 
     String originalPriorityId = extendedIssue.getOriginalPriority().getId();
-    updateCounterMap(originalPriorityId, priorityCounter);
+    priorityFrequency.addValue(originalPriorityId);
 
     if (extendedIssue.isDoesPriorityChanged()) {
       priorityChanges += 1;
-      updateCounterMap(reporterName, changerCounter);
+      changerFrequency.addValue(reporterName);
     }
   }
 
@@ -163,42 +152,46 @@ public class IssueListMetricGenerator {
 
     metrics.add(identifier);
     for (String priority : PRIORITIES) {
-      int frequencyPerPriority = priorityCounter.get(priority).intValue();
-      metrics.add(frequencyPerPriority);
-      Double relativeFrequency = numberOfIssues != 0 ? frequencyPerPriority / numberOfIssues : 0;
-      metrics.add(relativeFrequency);
-
-      int resolvedPerPriority = resolvedCounter.get(priority).intValue();
-      metrics.add(resolvedPerPriority);
-      double relativeResolved = frequencyPerPriority != 0
-          ? resolvedPerPriority / new Double(frequencyPerPriority) : 0;
-      metrics.add(relativeResolved);
-
-      int unresolvedPerPriority = unresolvedCounter.get(priority).intValue();
-      metrics.add(unresolvedPerPriority);
-      double relativeUnresolved = frequencyPerPriority != 0
-          ? unresolvedPerPriority / new Double(frequencyPerPriority) : 0;
-      metrics.add(relativeUnresolved);
+      metrics.add(priorityFrequency.getCount(priority));
+      metrics.add(Double.isNaN(priorityFrequency.getPct(priority)) ? 0.0
+          : priorityFrequency.getPct(priority));
+      metrics.add(resolvedFrequency.getCount(priority));
+      metrics.add(Double.isNaN(resolvedFrequency.getPct(priority)) ? 0.0
+          : resolvedFrequency.getPct(priority));
+      metrics.add(unresolvedFrequency.getCount(priority));
+      metrics.add(Double.isNaN(unresolvedFrequency.getPct(priority)) ? 0.0
+          : unresolvedFrequency.getPct(priority));
 
       DescriptiveStatistics timeDescriptiveStats = timePerPriorityCounter.get(priority);
-      double mean = 0.0;
-      double median = 0.0;
-      double standardDeviation = 0.0;
-
-      if (timeDescriptiveStats.getValues().length > 0) {
-        mean = timeDescriptiveStats.getMean();
-        median = timeDescriptiveStats.getPercentile(50);
-        standardDeviation = timeDescriptiveStats.getStandardDeviation();
-      }
-
-      metrics.add(mean);
-      metrics.add(median);
-      metrics.add(standardDeviation);
+      metrics
+          .add(Double.isNaN(timeDescriptiveStats.getMean()) ? 0.0 : timeDescriptiveStats.getMean());
+      metrics.add(Double.isNaN(timeDescriptiveStats.getPercentile(50)) ? 0.0
+          : timeDescriptiveStats.getPercentile(50));
+      metrics.add(Double.isNaN(timeDescriptiveStats.getStandardDeviation()) ? 0.0
+          : timeDescriptiveStats.getStandardDeviation());
     }
 
     metrics.add(numberOfIssues.intValue());
-    metrics.add((priorityCounter.get("4") + priorityCounter.get("5")) / numberOfIssues);
-    metrics.add((priorityCounter.get("1") + priorityCounter.get("2")) / numberOfIssues);
+
+    metrics.add(priorityFrequency.getPct(new Comparable<String>() {
+      @Override
+      public int compareTo(String object) {
+        if (object.equals("4") || object.equals("5")) {
+          return 0;
+        }
+        return -1;
+      }
+    }));
+
+    metrics.add(priorityFrequency.getPct(new Comparable<String>() {
+      @Override
+      public int compareTo(String object) {
+        if (object.equals("1") || object.equals("2")) {
+          return 0;
+        }
+        return 1;
+      }
+    }));
 
     metrics.add(this.priorityChanges);
     metrics.add(this.priorityChanges / numberOfIssues);
@@ -207,50 +200,19 @@ public class IssueListMetricGenerator {
     metrics.add(numberOfReporters);
     metrics.add(numberOfIssues / numberOfReporters);
 
-    metrics.add(changerCounter.keySet().size());
-    metrics.add(getMaximumKey(reporterCounter));
-    metrics.add(getMaximumKey(changerCounter));
+    metrics.add(changerFrequency.getUniqueCount());
+
+    metrics.add(reporterFrequency.getMode().isEmpty() ? null : reporterFrequency.getMode().get(0));
+    metrics.add(changerFrequency.getMode().isEmpty() ? null : changerFrequency.getMode().get(0));
     return metrics;
   }
 
   public int getNumberOfReporters() {
-    return reporterCounter.keySet().size();
+    return reporterFrequency.getUniqueCount();
   }
 
   public int getNumberOfIssues() {
     return this.originalIssues.size();
-  }
-
-  private String getMaximumKey(HashMap<String, Double> counterMap) {
-    String maxKey = "";
-    Double maxValue = -1.0;
-
-    for (String key : counterMap.keySet()) {
-      Double counter = counterMap.get(key);
-
-      if (counter > maxValue) {
-        maxValue = counter;
-        maxKey = key;
-      }
-    }
-
-    return maxKey;
-  }
-
-  private void updateCounterMap(String key, HashMap<String, Double> counterMap) {
-    this.updateCounterMap(key, counterMap, 1.0);
-  }
-
-  private void updateCounterMap(String key, Map<String, Double> counterMap, Double amount) {
-    if (!counterMap.containsKey(key)) {
-      counterMap.put(key, amount);
-    } else {
-      counterMap.put(key, counterMap.get(key) + amount);
-    }
-  }
-
-  public HashMap<String, Double> getPriorityCounter() {
-    return priorityCounter;
   }
 
   public int getPriorityChanges() {

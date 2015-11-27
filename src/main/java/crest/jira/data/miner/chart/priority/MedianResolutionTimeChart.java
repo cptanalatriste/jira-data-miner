@@ -2,9 +2,9 @@ package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
@@ -40,8 +40,7 @@ public class MedianResolutionTimeChart extends AbstractChart {
     NumberAxis counterAxis = new NumberAxis();
     counterAxis.setLabel(FREQUENCY_LABEL);
 
-    ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
-        counterAxis);
+    BarChart<String, Number> scatterChart = new BarChart<String, Number>(periodAxis, counterAxis);
     return scatterChart;
   }
 
