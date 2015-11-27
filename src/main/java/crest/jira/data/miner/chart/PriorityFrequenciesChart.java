@@ -1,22 +1,20 @@
 package crest.jira.data.miner.chart;
 
+import crest.jira.data.miner.report.model.IssueListMetricGenerator;
+
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public class PriorityFrequenciesChart extends AbstractChart {
 
+  private static final String CHART_TITLE = "Frequency according Priority";
   private static final String PERIOD_IDENTIFIER = "Period Identifier";
-  private static final String BLOCKER_IDENTIFIER = "Blocker";
-  private static final String CRITICAL_IDENTIFIER = "Critical";
-  private static final String MAJOR_IDENTIFIER = "Major";
-  private static final String MINOR_IDENTIFIER = "Minor";
-  private static final String TRIVIAL_IDENTIFIER = "Trivial";
 
   public static void main(String... args) {
     launch(args);
@@ -34,15 +32,14 @@ public class PriorityFrequenciesChart extends AbstractChart {
     NumberAxis counterAxis = new NumberAxis();
     counterAxis.setLabel(FREQUENCY_LABEL);
 
-    ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
+    StackedBarChart<String, Number> stackedChart = new StackedBarChart<String, Number>(periodAxis,
         counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        PERIOD_IDENTIFIER, BLOCKER_IDENTIFIER, CRITICAL_IDENTIFIER, MAJOR_IDENTIFIER,
-        MINOR_IDENTIFIER, TRIVIAL_IDENTIFIER);
-    scatterChart.getData().addAll(chartSeries.values());
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(), PERIOD_IDENTIFIER,
+        getPriorityLabelsBySuffix(IssueListMetricGenerator.FREQUENCIES_SUFIX));
+    stackedChart.getData().addAll(chartSeries);
 
-    showAndSaveChart(scatterChart, "Frequency according Priority", stage);
+    showAndSaveChart(stackedChart, CHART_TITLE, stage);
   }
 
 }

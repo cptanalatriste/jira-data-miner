@@ -7,7 +7,7 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public class ConsolidatedSeverityChart extends AbstractChart {
 
@@ -35,10 +35,10 @@ public class ConsolidatedSeverityChart extends AbstractChart {
     StackedAreaChart<String, Number> stackAreaChart = new StackedAreaChart<String, Number>(
         periodAxis, counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
         PERIOD_IDENTIFIER, LOW_SEVERITY_IDENTIFIER, MEDIUM_SEVERITY_IDENTIFIER,
         HIGH_SEVERITY_IDENTIFIER);
-    stackAreaChart.getData().addAll(chartSeries.values());
+    stackAreaChart.getData().addAll(chartSeries);
 
     showAndSaveChart(stackAreaChart, "Consolidated Severity", stage);
 

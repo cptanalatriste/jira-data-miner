@@ -16,16 +16,17 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-import javax.imageio.ImageIO;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
+
 
 public abstract class AbstractChart extends Application {
 
@@ -57,9 +58,10 @@ public abstract class AbstractChart extends Application {
    *          Identifier of the values.
    * @return Map containing the series.
    */
-  public static Map<String, Series<String, Number>> getSeries(String fileName,
-      String recordIdentifier, String... valueIdentifiers) {
+  public static List<Series<String, Number>> getSeries(String fileName, String recordIdentifier,
+      String... valueIdentifiers) {
     Map<String, Series<String, Number>> series = new HashMap<String, Series<String, Number>>();
+    List<Series<String, Number>> seriesAsList = new ArrayList<>();
 
     for (String valueIdentifier : valueIdentifiers) {
       Series<String, Number> serie = new Series<String, Number>();
@@ -89,7 +91,11 @@ public abstract class AbstractChart extends Application {
       ex.printStackTrace();
     }
 
-    return series;
+    for (String label : valueIdentifiers) {
+      seriesAsList.add(series.get(label));
+    }
+
+    return seriesAsList;
   }
 
   /**
@@ -106,15 +112,34 @@ public abstract class AbstractChart extends Application {
    */
   public static void showAndSaveChart(XYChart<String, Number> chart, String title, Stage stage)
       throws IOException {
-    chart.setTitle(title + " - " + FILE_NAME);
+    String chartTitle = title + " - " + FILE_NAME;
+    chart.setTitle(chartTitle);
     Scene scene = new Scene(chart, 800, 600);
     stage.setScene(scene);
     stage.setMaximized(true);
     stage.show();
 
     WritableImage writableImage = chart.snapshot(new SnapshotParameters(), null);
-    File file = new File(DIRECTORY + FILE_NAME + PNG_EXTENSION);
+    File file = new File(DIRECTORY + chartTitle + PNG_EXTENSION);
     ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
+  }
+
+  /**
+   * Return a list of Priority-Related CSV keys.
+   * 
+   * @param suffix
+   *          Suffix.
+   * @return List of CSV keys.
+   */
+  public static String[] getPriorityLabelsBySuffix(String suffix) {
+    List<String> labels = new ArrayList<>();
+
+    for (String priority : IssueListMetricGenerator.PRIORITIES) {
+      labels
+          .add(IssueListMetricGenerator.PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)] + suffix);
+    }
+
+    return labels.toArray(new String[labels.size()]);
   }
 
 }

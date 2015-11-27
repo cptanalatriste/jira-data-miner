@@ -10,9 +10,19 @@ import java.util.Map;
 
 public class IssueListMetricGenerator {
 
-  private static String[] supportedPriorities = new String[] { "0", "1", "2", "3", "4", "5" };
-  private static String[] prioritiesDescriptions = new String[] { "No Priority", "Blocker",
+  public static final String[] PRIORITIES = new String[] { "0", "1", "2", "3", "4", "5" };
+  public static final String[] PRIORITY_DESCRIPTIONS = new String[] { "No Priority", "Blocker",
       "Critical", "Major", "Minor", "Trivial" };
+
+  public static final String RESTIME_STD_SUFFIX = " Resolution Time (std)";
+  public static final String RESTIME_MED_SUFFIX = " Resolution Time (med)";
+  public static final String RESTIME_AVG_SUFFIX = " Resolution Time (avg)";
+  public static final String UNRESOLVED_RELATIVE_SUFIX = " Unresolved (%)";
+  public static final String UNRESOLVED_SUFIX = " Unresolved";
+  public static final String RESOLVED_RELATIVE_SUFIX = " Resolved (%)";
+  public static final String RESOLVED_SUFIX = " Resolved";
+  public static final String RELATIVE_SUFIX = " (%)";
+  public static final String FREQUENCIES_SUFIX = "";
 
   private HashMap<String, Double> priorityCounter = new HashMap<String, Double>();
   private HashMap<String, Double> reporterCounter = new HashMap<String, Double>();
@@ -44,13 +54,13 @@ public class IssueListMetricGenerator {
   }
 
   private void initializePriorityStatistics(HashMap<String, DescriptiveStatistics> counterMap) {
-    for (String priority : supportedPriorities) {
+    for (String priority : PRIORITIES) {
       counterMap.put(priority, new DescriptiveStatistics());
     }
   }
 
   private void initializePriorityCounter(HashMap<String, Double> counterMap) {
-    for (String priority : supportedPriorities) {
+    for (String priority : PRIORITIES) {
       counterMap.put(priority, 0.0);
     }
   }
@@ -96,18 +106,18 @@ public class IssueListMetricGenerator {
     List<String> headerAsString = new ArrayList<String>();
     headerAsString.add("Period Identifier");
 
-    for (String priority : supportedPriorities) {
-      String priorityDescription = prioritiesDescriptions[Integer.parseInt(priority)];
+    for (String priority : PRIORITIES) {
+      String priorityDescription = PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)];
 
       headerAsString.add(priorityDescription);
-      headerAsString.add(priorityDescription + " (%)");
-      headerAsString.add(priorityDescription + " Resolved");
-      headerAsString.add(priorityDescription + " Resolved (%)");
-      headerAsString.add(priorityDescription + " Unresolved");
-      headerAsString.add(priorityDescription + " Unresolved (%)");
-      headerAsString.add(priorityDescription + " Resolution Time (avg)");
-      headerAsString.add(priorityDescription + " Resolution Time (med)");
-      headerAsString.add(priorityDescription + " Resolution Time (std)");
+      headerAsString.add(priorityDescription + RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + RESOLVED_SUFIX);
+      headerAsString.add(priorityDescription + RESOLVED_RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + UNRESOLVED_SUFIX);
+      headerAsString.add(priorityDescription + UNRESOLVED_RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + RESTIME_AVG_SUFFIX);
+      headerAsString.add(priorityDescription + RESTIME_MED_SUFFIX);
+      headerAsString.add(priorityDescription + RESTIME_STD_SUFFIX);
 
     }
 
@@ -130,7 +140,7 @@ public class IssueListMetricGenerator {
     Double numberOfIssues = new Double(getNumberOfIssues());
 
     metrics.add(identifier);
-    for (String priority : supportedPriorities) {
+    for (String priority : PRIORITIES) {
       int frequencyPerPriority = priorityCounter.get(priority).intValue();
       metrics.add(frequencyPerPriority);
       Double relativeFrequency = numberOfIssues != 0 ? frequencyPerPriority / numberOfIssues : 0;

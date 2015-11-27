@@ -7,7 +7,7 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public class AverageResolutionTimeChart extends AbstractChart {
 
@@ -37,10 +37,10 @@ public class AverageResolutionTimeChart extends AbstractChart {
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
         PERIOD_IDENTIFIER, BLOCKER_IDENTIFIER, CRITICAL_IDENTIFIER, MAJOR_IDENTIFIER,
         MINOR_IDENTIFIER, TRIVIAL_IDENTIFIER);
-    scatterChart.getData().addAll(chartSeries.values());
+    scatterChart.getData().addAll(chartSeries);
 
     showAndSaveChart(scatterChart, "Average Resolution Time", stage);
 

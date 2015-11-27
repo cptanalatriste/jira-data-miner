@@ -7,7 +7,7 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public class RelativePriorityChanges extends AbstractChart {
 
@@ -33,9 +33,9 @@ public class RelativePriorityChanges extends AbstractChart {
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
         PERIOD_IDENTIFIER, PRIORITY_CHANGES_IDENTIFIER);
-    scatterChart.getData().addAll(chartSeries.values());
+    scatterChart.getData().addAll(chartSeries);
 
     showAndSaveChart(scatterChart, "Priority Changes as Percentage", stage);
   }

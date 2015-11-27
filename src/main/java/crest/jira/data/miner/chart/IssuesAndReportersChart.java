@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public class IssuesAndReportersChart extends AbstractChart {
 
@@ -37,10 +37,10 @@ public class IssuesAndReportersChart extends AbstractChart {
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
 
-    Map<String, Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
         PERIOD_IDENTIFIER, TOTAL_IDENTIFIER, NUMBER_REPORTERS_IDENTIFIER,
         ISSUES_PER_REPORTER_IDENTIFIER);
-    scatterChart.getData().addAll(chartSeries.values());
+    scatterChart.getData().addAll(chartSeries);
 
     showAndSaveChart(scatterChart, "Issues and Reporters", stage);
   }
