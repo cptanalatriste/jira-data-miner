@@ -1,8 +1,8 @@
 package crest.jira.data.miner.chart;
 
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
@@ -34,7 +34,7 @@ public class IssuesAndReportersChart extends AbstractChart {
     NumberAxis counterAxis = new NumberAxis();
     counterAxis.setLabel(FREQUENCY_LABEL);
 
-    ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
+    LineChart<String, Number> scatterChart = new LineChart<String, Number>(periodAxis,
         counterAxis);
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
