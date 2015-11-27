@@ -5,6 +5,8 @@ import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
 import crest.jira.data.retriever.model.Priority;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,7 +58,7 @@ public class ExtendedIssue {
     this.doesPriorityChanged = false;
     this.originalPriority = noPriority;
 
-    if (issue.getPriority() != null) {
+    if (issue.getPriority() != null && issue.getPriority().getId() != null) {
       this.originalPriority = issue.getPriority();
     }
 
@@ -81,9 +83,13 @@ public class ExtendedIssue {
 
       TimedChangeLogItem firstChange = priorityChanges.get(0);
 
-      this.originalPriority = new Priority();
-      this.originalPriority.setId(firstChange.getChangeLogItem().getFrom());
-      this.originalPriority.setName(firstChange.getChangeLogItem().getFromString());
+      String fromPriority = firstChange.getChangeLogItem().getFrom();
+
+      if (fromPriority != null) {
+        this.originalPriority = new Priority();
+        this.originalPriority.setId(fromPriority);
+        this.originalPriority.setName(firstChange.getChangeLogItem().getFromString());
+      }
     }
   }
 
@@ -105,6 +111,12 @@ public class ExtendedIssue {
 
   public Issue getIssue() {
     return issue;
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this).append("issueId", issue.getId())
+        .append("boardId", issue.getBoardId()).append("priority", issue.getPriority()).toString();
   }
 
 }

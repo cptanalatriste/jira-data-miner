@@ -21,31 +21,44 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class JiraIssuesPerBoardDao {
+public class JiraIssueListDao {
 
+  private static final String BOARD_KEY_PREFFIX = "BOARD-";
   private static final String BUG_ISSUE_TYPE = "1";
-  private String boardId;
+
   private Dao<Issue, String> issueDao;
   private Dao<History, String> historyDao;
   private Dao<ChangeLogItem, String> changeLogItemDao;
-  private List<ExtendedIssue> issueList;
+  private List<ExtendedIssue> issueList = new ArrayList<ExtendedIssue>();
 
   /**
    * Manages the database access for Issue Analysis.
    * 
-   * @param boardId
-   *          Board identifier.
    * @param connectionSource
    *          Connection source.
    * @throws SQLException
    *           In case of SQL errors.
    */
-  public JiraIssuesPerBoardDao(String boardId, ConnectionSource connectionSource)
-      throws SQLException {
-    this.boardId = boardId;
+  public JiraIssueListDao(ConnectionSource connectionSource) throws SQLException {
     this.issueDao = DaoManager.createDao(connectionSource, Issue.class);
     this.historyDao = DaoManager.createDao(connectionSource, History.class);
     this.changeLogItemDao = DaoManager.createDao(connectionSource, ChangeLogItem.class);
+  }
+
+  /**
+   * Returns all the Bugs present in the JIRA Issue Database.
+   * 
+   * @throws SQLException
+   *           Constructing SQL can produce errors.
+   */
+  public void loadAllBugs() throws SQLException {
+    QueryBuilder<Issue, String> queryBuilder = issueDao.queryBuilder();
+    Where<Issue, String> whereClause = queryBuilder.where();
+    whereClause.eq("issueTypeId", BUG_ISSUE_TYPE);
+    PreparedQuery<Issue> preparedQuery = queryBuilder.prepare();
+
+    List<Issue> issuesFromDb = issueDao.query(preparedQuery);
+    loadHistoryForIssueList(issuesFromDb);
   }
 
   /**
@@ -54,11 +67,12 @@ public class JiraIssuesPerBoardDao {
    * @throws SQLException
    *           In case of problems.
    */
-  public void loadIssues(boolean onlyBugs, Object... reporters) throws SQLException {
+  public void loadBoardIssues(String boardId, boolean onlyBugs, Object... reporters)
+      throws SQLException {
     QueryBuilder<Issue, String> queryBuilder = issueDao.queryBuilder();
     Where<Issue, String> whereClause = queryBuilder.where();
 
-    whereClause.eq("boardId", this.boardId);
+    whereClause.eq("boardId", boardId);
 
     boolean filterByReporters = reporters != null && reporters.length > 0;
     if (onlyBugs || filterByReporters) {
@@ -77,15 +91,10 @@ public class JiraIssuesPerBoardDao {
 
     List<Issue> issuesFromDb = issueDao.query(preparedQuery);
     loadHistoryForIssueList(issuesFromDb);
-
-    this.issueList = new ArrayList<ExtendedIssue>();
-
-    for (Issue issue : issuesFromDb) {
-      this.issueList.add(new ExtendedIssue(issue));
-    }
   }
 
   private void loadHistoryForIssueList(List<Issue> issuesFromDb) throws SQLException {
+
     for (Issue issue : issuesFromDb) {
       issue.setChangeLog(new ResponseList<History>());
 
@@ -97,8 +106,26 @@ public class JiraIssuesPerBoardDao {
       }
 
       issue.getChangeLog().setValues(historyList.toArray(new History[historyList.size()]));
+      this.issueList.add(new ExtendedIssue(issue));
+    }
+  }
+
+  /**
+   * Organizes a list of Issues in corresponding boards.
+   * 
+   * @return Map of per-board lists of issues.
+   */
+  public MultiValueMap<String, ExtendedIssue> organizeInBoards() {
+    MultiValueMap<String, ExtendedIssue> issuesPerBoard = new MultiValueMap<>();
+    for (ExtendedIssue extendedIssue : issueList) {
+      String boardKey = extendedIssue.getIssue().getBoardId();
+      if (boardKey.length() == 1) {
+        boardKey = "0" + boardKey;
+      }
+      issuesPerBoard.put(BOARD_KEY_PREFFIX + boardKey, extendedIssue);
     }
 
+    return issuesPerBoard;
   }
 
   /**
@@ -106,7 +133,7 @@ public class JiraIssuesPerBoardDao {
    * 
    * @return A MultiValueMap, where the frame identified is the key.
    */
-  public MultiValueMap<String, ExtendedIssue> organizeTimeFrames() {
+  public MultiValueMap<String, ExtendedIssue> organizeInTimeFrames() {
     MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = new MultiValueMap<>();
 
     for (ExtendedIssue issue : issueList) {

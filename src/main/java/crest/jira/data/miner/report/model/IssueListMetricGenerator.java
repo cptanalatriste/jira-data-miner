@@ -7,8 +7,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class IssueListMetricGenerator {
+
+  private static Logger logger = Logger.getLogger(IssueListMetricGenerator.class.getName());
 
   public static final String[] PRIORITIES = new String[] { "0", "1", "2", "3", "4", "5" };
   public static final String[] PRIORITY_DESCRIPTIONS = new String[] { "No Priority", "Blocker",
@@ -67,8 +71,13 @@ public class IssueListMetricGenerator {
 
   private void calculateMetrics() {
     for (ExtendedIssue extendedIssue : originalIssues) {
-      this.calculatePriorityMetrics(extendedIssue);
-      this.calculateResolutionTimeMetrics(extendedIssue);
+      try {
+        this.calculatePriorityMetrics(extendedIssue);
+        this.calculateResolutionTimeMetrics(extendedIssue);
+      } catch (Exception e) {
+        logger.log(Level.SEVERE, "Error while processing issue: " + extendedIssue, e);
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -77,7 +86,9 @@ public class IssueListMetricGenerator {
 
     if (extendedIssue.isResolved()) {
       updateCounterMap(originalPriorityId, resolvedCounter);
-      timePerPriorityCounter.get(originalPriorityId).addValue(extendedIssue.getResolutionTime());
+
+      DescriptiveStatistics counterPerPriority = timePerPriorityCounter.get(originalPriorityId);
+      counterPerPriority.addValue(extendedIssue.getResolutionTime());
     } else {
       updateCounterMap(originalPriorityId, unresolvedCounter);
     }
