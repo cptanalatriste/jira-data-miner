@@ -1,8 +1,11 @@
-package crest.jira.data.miner.chart;
+package crest.jira.data.miner.chart.priority;
+
+import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.StackedAreaChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
@@ -10,11 +13,6 @@ import java.io.IOException;
 import java.util.List;
 
 public class ConsolidatedSeverityChart extends AbstractChart {
-
-  private static final String PERIOD_IDENTIFIER = "Period Identifier";
-  private static final String LOW_SEVERITY_IDENTIFIER = "Non-Severe (%)";
-  private static final String MEDIUM_SEVERITY_IDENTIFIER = "Major (%)";
-  private static final String HIGH_SEVERITY_IDENTIFIER = "Severe (%)";
 
   public static void main(String... args) {
     launch(args);
@@ -26,6 +24,18 @@ public class ConsolidatedSeverityChart extends AbstractChart {
   }
 
   private void buildChart(Stage stage) throws IOException {
+
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+        IssueListMetricGenerator.PERIOD_IDENTIFIER,
+        IssueListMetricGenerator.LOW_SEVERITY_IDENTIFIER,
+        IssueListMetricGenerator.PRIORITY_DESCRIPTIONS[3] + IssueListMetricGenerator.RELATIVE_SUFIX,
+        IssueListMetricGenerator.HIGH_SEVERITY_IDENTIFIER);
+
+    showAndSaveChart("Consolidated Severity", stage, chartSeries);
+  }
+
+  @Override
+  public XYChart<String, Number> getChart() {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
@@ -34,13 +44,6 @@ public class ConsolidatedSeverityChart extends AbstractChart {
 
     StackedAreaChart<String, Number> stackAreaChart = new StackedAreaChart<String, Number>(
         periodAxis, counterAxis);
-
-    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        PERIOD_IDENTIFIER, LOW_SEVERITY_IDENTIFIER, MEDIUM_SEVERITY_IDENTIFIER,
-        HIGH_SEVERITY_IDENTIFIER);
-    stackAreaChart.getData().addAll(chartSeries);
-
-    showAndSaveChart(stackAreaChart, "Consolidated Severity", stage);
-
+    return stackAreaChart;
   }
 }

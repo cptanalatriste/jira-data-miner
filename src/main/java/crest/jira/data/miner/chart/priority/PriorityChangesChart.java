@@ -1,8 +1,11 @@
-package crest.jira.data.miner.chart;
+package crest.jira.data.miner.chart.priority;
+
+import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
@@ -10,9 +13,6 @@ import java.io.IOException;
 import java.util.List;
 
 public class PriorityChangesChart extends AbstractChart {
-
-  private static final String PERIOD_IDENTIFIER = "Period Identifier";
-  private static final String PRIORITY_CHANGES_IDENTIFIER = "Priority Changes";
 
   public static void main(String... args) {
     launch(args);
@@ -24,6 +24,16 @@ public class PriorityChangesChart extends AbstractChart {
   }
 
   private void buildChart(Stage stage) throws IOException {
+
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+        IssueListMetricGenerator.PERIOD_IDENTIFIER,
+        IssueListMetricGenerator.PRIORITY_CHANGES_IDENTIFIER);
+
+    showAndSaveChart("Priority Changes", stage, chartSeries);
+  }
+
+  @Override
+  public XYChart<String, Number> getChart() {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
@@ -32,11 +42,6 @@ public class PriorityChangesChart extends AbstractChart {
 
     ScatterChart<String, Number> scatterChart = new ScatterChart<String, Number>(periodAxis,
         counterAxis);
-
-    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        PERIOD_IDENTIFIER, PRIORITY_CHANGES_IDENTIFIER);
-    scatterChart.getData().addAll(chartSeries);
-
-    showAndSaveChart(scatterChart, "Priority Changes", stage);
+    return scatterChart;
   }
 }

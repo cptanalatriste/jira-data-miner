@@ -1,4 +1,4 @@
-package crest.jira.data.miner.chart;
+package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
-
 
 public abstract class AbstractChart extends Application {
 
@@ -98,11 +97,11 @@ public abstract class AbstractChart extends Application {
     return seriesAsList;
   }
 
+  public abstract XYChart<String, Number> getChart();
+
   /**
    * Assigns a title to a chart and shows it on the Screen.
    * 
-   * @param chart
-   *          Chart.
    * @param title
    *          Title.
    * @param stage
@@ -110,8 +109,11 @@ public abstract class AbstractChart extends Application {
    * @throws IOException
    *           Image writing might fail.
    */
-  public static void showAndSaveChart(XYChart<String, Number> chart, String title, Stage stage)
+  public void showAndSaveChart(String title, Stage stage, List<Series<String, Number>> chartSeries)
       throws IOException {
+    XYChart<String, Number> chart = this.getChart();
+    chart.getData().addAll(chartSeries);
+
     String chartTitle = title + " - " + FILE_NAME;
     chart.setTitle(chartTitle);
     Scene scene = new Scene(chart, 800, 600);

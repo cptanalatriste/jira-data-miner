@@ -28,6 +28,16 @@ public class IssueListMetricGenerator {
   public static final String RELATIVE_SUFIX = " (%)";
   public static final String FREQUENCIES_SUFIX = "";
 
+  public static final String PERIOD_IDENTIFIER = "Period Identifier";
+  public static final String LOW_SEVERITY_IDENTIFIER = "Non-Severe (%)";
+  public static final String HIGH_SEVERITY_IDENTIFIER = "Severe (%)";
+  public static final String NUMBER_REPORTERS_IDENTIFIER = "Number of Reporters";
+  public static final String TOTAL_IDENTIFIER = "Total";
+  public static final String ISSUES_PER_REPORTER_IDENTIFIER = "Average Issues per Reporter";
+  public static final String CHANGERS_IDENTIFIER = "Number of Changers";
+  public static final String PRIORITY_CHANGES_IDENTIFIER = "Priority Changes";
+  public static final String RELATIVE_PRIORITY_CHANGES_IDENTIFIER = "Priority Changes (%)";
+
   private HashMap<String, Double> priorityCounter = new HashMap<String, Double>();
   private HashMap<String, Double> reporterCounter = new HashMap<String, Double>();
   private HashMap<String, Double> changerCounter = new HashMap<String, Double>();
@@ -115,7 +125,7 @@ public class IssueListMetricGenerator {
    */
   public static String[] getMetricHeader() {
     List<String> headerAsString = new ArrayList<String>();
-    headerAsString.add("Period Identifier");
+    headerAsString.add(PERIOD_IDENTIFIER);
 
     for (String priority : PRIORITIES) {
       String priorityDescription = PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)];
@@ -132,9 +142,10 @@ public class IssueListMetricGenerator {
 
     }
 
-    headerAsString.addAll(Arrays.asList("Total", "Non-Severe (%)", "Severe (%)", "Priority Changes",
-        "Priority Changes (%)", "Number of Reporters", "Average Issues per Reporter",
-        "Number of Changers", "Top Reporter", "Top Changer"));
+    headerAsString.addAll(Arrays.asList(TOTAL_IDENTIFIER, LOW_SEVERITY_IDENTIFIER,
+        HIGH_SEVERITY_IDENTIFIER, PRIORITY_CHANGES_IDENTIFIER, RELATIVE_PRIORITY_CHANGES_IDENTIFIER,
+        NUMBER_REPORTERS_IDENTIFIER, ISSUES_PER_REPORTER_IDENTIFIER, CHANGERS_IDENTIFIER,
+        "Top Reporter", "Top Changer"));
 
     return headerAsString.toArray(new String[headerAsString.size()]);
 

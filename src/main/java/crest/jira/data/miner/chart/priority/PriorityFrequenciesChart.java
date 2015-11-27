@@ -1,10 +1,11 @@
-package crest.jira.data.miner.chart;
+package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.StackedBarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
@@ -14,7 +15,6 @@ import java.util.List;
 public class PriorityFrequenciesChart extends AbstractChart {
 
   private static final String CHART_TITLE = "Frequency according Priority";
-  private static final String PERIOD_IDENTIFIER = "Period Identifier";
 
   public static void main(String... args) {
     launch(args);
@@ -26,6 +26,16 @@ public class PriorityFrequenciesChart extends AbstractChart {
   }
 
   private void buildChart(Stage stage) throws IOException {
+
+    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
+        IssueListMetricGenerator.PERIOD_IDENTIFIER,
+        getPriorityLabelsBySuffix(IssueListMetricGenerator.FREQUENCIES_SUFIX));
+
+    showAndSaveChart(CHART_TITLE, stage, chartSeries);
+  }
+
+  @Override
+  public XYChart<String, Number> getChart() {
     CategoryAxis periodAxis = new CategoryAxis();
     periodAxis.setLabel(TIME_PERIOD_LABEL);
 
@@ -34,12 +44,7 @@ public class PriorityFrequenciesChart extends AbstractChart {
 
     StackedBarChart<String, Number> stackedChart = new StackedBarChart<String, Number>(periodAxis,
         counterAxis);
-
-    List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(), PERIOD_IDENTIFIER,
-        getPriorityLabelsBySuffix(IssueListMetricGenerator.FREQUENCIES_SUFIX));
-    stackedChart.getData().addAll(chartSeries);
-
-    showAndSaveChart(stackedChart, CHART_TITLE, stage);
+    return stackedChart;
   }
 
 }
