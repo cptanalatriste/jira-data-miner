@@ -29,8 +29,8 @@ public class IssueListMetricGenerator {
   public static final String FREQUENCIES_SUFIX = "";
 
   public static final String PERIOD_IDENTIFIER = "Period Identifier";
-  public static final String LOW_SEVERITY_IDENTIFIER = "Non-Severe (%)";
-  public static final String HIGH_SEVERITY_IDENTIFIER = "Severe (%)";
+  public static final String LOW_SEVERITY_IDENTIFIER = "Non-Severe";
+  public static final String HIGH_SEVERITY_IDENTIFIER = "Severe";
   public static final String NUMBER_REPORTERS_IDENTIFIER = "Number of Reporters";
   public static final String TOTAL_IDENTIFIER = "Total";
   public static final String ISSUES_PER_REPORTER_IDENTIFIER = "Average Issues per Reporter";
@@ -43,6 +43,8 @@ public class IssueListMetricGenerator {
   private Frequency changerFrequency = new Frequency();
   private Frequency resolvedFrequency = new Frequency();
   private Frequency unresolvedFrequency = new Frequency();
+  private DescriptiveStatistics severeResolutionTime = new DescriptiveStatistics();
+  private DescriptiveStatistics nonSevereResolutionTime = new DescriptiveStatistics();
 
   private int priorityChanges = 0;
   private HashMap<String, DescriptiveStatistics> timePerPriorityCounter = new HashMap<>();
@@ -87,7 +89,14 @@ public class IssueListMetricGenerator {
       resolvedFrequency.addValue(originalPriorityId);
 
       DescriptiveStatistics counterPerPriority = timePerPriorityCounter.get(originalPriorityId);
-      counterPerPriority.addValue(extendedIssue.getResolutionTime());
+      Double resolutionTime = extendedIssue.getResolutionTime();
+      counterPerPriority.addValue(resolutionTime);
+
+      if (extendedIssue.isSevere()) {
+        severeResolutionTime.addValue(resolutionTime);
+      } else if (extendedIssue.isNonSevere()) {
+        nonSevereResolutionTime.addValue(resolutionTime);
+      }
     } else {
       unresolvedFrequency.addValue(originalPriorityId);
     }
@@ -131,10 +140,13 @@ public class IssueListMetricGenerator {
 
     }
 
-    headerAsString.addAll(Arrays.asList(TOTAL_IDENTIFIER, LOW_SEVERITY_IDENTIFIER,
-        HIGH_SEVERITY_IDENTIFIER, PRIORITY_CHANGES_IDENTIFIER, RELATIVE_PRIORITY_CHANGES_IDENTIFIER,
-        NUMBER_REPORTERS_IDENTIFIER, ISSUES_PER_REPORTER_IDENTIFIER, CHANGERS_IDENTIFIER,
-        "Top Reporter", "Top Changer"));
+    headerAsString.addAll(Arrays.asList(TOTAL_IDENTIFIER, LOW_SEVERITY_IDENTIFIER + RELATIVE_SUFIX,
+        HIGH_SEVERITY_IDENTIFIER + RELATIVE_SUFIX, LOW_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX,
+        HIGH_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX,
+        LOW_SEVERITY_IDENTIFIER + UNRESOLVED_RELATIVE_SUFIX,
+        HIGH_SEVERITY_IDENTIFIER + UNRESOLVED_RELATIVE_SUFIX, PRIORITY_CHANGES_IDENTIFIER,
+        RELATIVE_PRIORITY_CHANGES_IDENTIFIER, NUMBER_REPORTERS_IDENTIFIER,
+        ISSUES_PER_REPORTER_IDENTIFIER, CHANGERS_IDENTIFIER, "Top Reporter", "Top Changer"));
 
     return headerAsString.toArray(new String[headerAsString.size()]);
 
@@ -153,45 +165,28 @@ public class IssueListMetricGenerator {
     metrics.add(identifier);
     for (String priority : PRIORITIES) {
       metrics.add(priorityFrequency.getCount(priority));
-      metrics.add(Double.isNaN(priorityFrequency.getPct(priority)) ? 0.0
-          : priorityFrequency.getPct(priority));
+      metrics.add(priorityFrequency.getPct(priority));
       metrics.add(resolvedFrequency.getCount(priority));
-      metrics.add(Double.isNaN(resolvedFrequency.getPct(priority)) ? 0.0
-          : resolvedFrequency.getPct(priority));
+      metrics.add(resolvedFrequency.getPct(priority));
       metrics.add(unresolvedFrequency.getCount(priority));
-      metrics.add(Double.isNaN(unresolvedFrequency.getPct(priority)) ? 0.0
-          : unresolvedFrequency.getPct(priority));
+      metrics.add(unresolvedFrequency.getPct(priority));
 
       DescriptiveStatistics timeDescriptiveStats = timePerPriorityCounter.get(priority);
-      metrics
-          .add(Double.isNaN(timeDescriptiveStats.getMean()) ? 0.0 : timeDescriptiveStats.getMean());
-      metrics.add(Double.isNaN(timeDescriptiveStats.getPercentile(50)) ? 0.0
-          : timeDescriptiveStats.getPercentile(50));
-      metrics.add(Double.isNaN(timeDescriptiveStats.getStandardDeviation()) ? 0.0
-          : timeDescriptiveStats.getStandardDeviation());
+      metrics.add(timeDescriptiveStats.getMean());
+      metrics.add(timeDescriptiveStats.getPercentile(50));
+      metrics.add(timeDescriptiveStats.getStandardDeviation());
     }
 
     metrics.add(numberOfIssues.intValue());
 
-    metrics.add(priorityFrequency.getPct(new Comparable<String>() {
-      @Override
-      public int compareTo(String object) {
-        if (object.equals("4") || object.equals("5")) {
-          return 0;
-        }
-        return -1;
-      }
-    }));
+    metrics.add(priorityFrequency.getPct("4") + priorityFrequency.getPct("5"));
+    metrics.add(priorityFrequency.getPct("1") + priorityFrequency.getPct("2"));
 
-    metrics.add(priorityFrequency.getPct(new Comparable<String>() {
-      @Override
-      public int compareTo(String object) {
-        if (object.equals("1") || object.equals("2")) {
-          return 0;
-        }
-        return 1;
-      }
-    }));
+    metrics.add(nonSevereResolutionTime.getPercentile(50));
+    metrics.add(severeResolutionTime.getPercentile(50));
+
+    metrics.add(unresolvedFrequency.getPct("4") + unresolvedFrequency.getPct("5"));
+    metrics.add(unresolvedFrequency.getPct("1") + unresolvedFrequency.getPct("2"));
 
     metrics.add(this.priorityChanges);
     metrics.add(this.priorityChanges / numberOfIssues);

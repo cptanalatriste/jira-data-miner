@@ -2,7 +2,6 @@ package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.report.model.IssueListMetricGenerator;
 
-
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -31,13 +30,14 @@ import javax.imageio.ImageIO;
 public abstract class AbstractChart extends Application {
 
   private static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  private static final String FILE_NAME = "Board_35_1448661676466";
+  private static final String FILE_NAME = "Board_ALLBOARDS_1448706770594";
   private static final String CSV_EXTENSION = ".csv";
   private static final String PNG_EXTENSION = ".png";
 
   public static final String TIME_PERIOD_LABEL = "Time Period";
   public static final String BOARD_LABEL = "Board";
   public static final String FREQUENCY_LABEL = "Frequency";
+  public static final String TIME_LABEL = "Time in Days";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
 
   public static void main(String... args) {
@@ -82,9 +82,13 @@ public abstract class AbstractChart extends Application {
         CSVRecord csvRecord = records.get(index);
 
         String identifierValue = csvRecord.get(recordIdentifier);
+
         for (String valueIdentifier : valueIdentifiers) {
           Double numericValue = Double.parseDouble(csvRecord.get(valueIdentifier));
-          series.get(valueIdentifier).getData().add(new Data<>(identifierValue, numericValue));
+
+          if (!numericValue.isNaN()) {
+            series.get(valueIdentifier).getData().add(new Data<>(identifierValue, numericValue));
+          }
         }
       }
 

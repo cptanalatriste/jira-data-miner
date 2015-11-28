@@ -38,6 +38,32 @@ public class ExtendedIssue {
     loadResolutionProperties();
   }
 
+  /**
+   * Indicate if this a severe issue.
+   * 
+   * @return True if it is severe, false if it is not.
+   */
+  public boolean isSevere() {
+    if ("1".equals(originalPriority.getId()) || "2".equals(originalPriority.getId())) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Indicate if this a non-severe issue.
+   * 
+   * @return True if it is non-severe, false if it is not.
+   */
+  public boolean isNonSevere() {
+    if ("4".equals(originalPriority.getId()) || "5".equals(originalPriority.getId())) {
+      return true;
+    }
+
+    return false;
+  }
+
   private void loadResolutionProperties() {
     Date reportedDate = this.issue.getCreated();
     Date resolutionDate = this.issue.getResolutiondate();
