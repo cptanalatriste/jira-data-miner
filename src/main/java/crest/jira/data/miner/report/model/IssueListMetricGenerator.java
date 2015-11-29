@@ -43,6 +43,7 @@ public class IssueListMetricGenerator {
   private Frequency changerFrequency = new Frequency();
   private Frequency resolvedFrequency = new Frequency();
   private Frequency unresolvedFrequency = new Frequency();
+  private DescriptiveStatistics generalResolutionTime = new DescriptiveStatistics();
   private DescriptiveStatistics severeResolutionTime = new DescriptiveStatistics();
   private DescriptiveStatistics nonSevereResolutionTime = new DescriptiveStatistics();
 
@@ -97,6 +98,8 @@ public class IssueListMetricGenerator {
       } else if (extendedIssue.isNonSevere()) {
         nonSevereResolutionTime.addValue(resolutionTime);
       }
+
+      generalResolutionTime.addValue(resolutionTime);
     } else {
       unresolvedFrequency.addValue(originalPriorityId);
     }
@@ -140,9 +143,9 @@ public class IssueListMetricGenerator {
 
     }
 
-    headerAsString.addAll(Arrays.asList(TOTAL_IDENTIFIER, LOW_SEVERITY_IDENTIFIER + RELATIVE_SUFIX,
-        HIGH_SEVERITY_IDENTIFIER + RELATIVE_SUFIX, LOW_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX,
-        HIGH_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX,
+    headerAsString.addAll(Arrays.asList(TOTAL_IDENTIFIER, TOTAL_IDENTIFIER + RESTIME_MED_SUFFIX,
+        LOW_SEVERITY_IDENTIFIER + RELATIVE_SUFIX, HIGH_SEVERITY_IDENTIFIER + RELATIVE_SUFIX,
+        LOW_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX, HIGH_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX,
         LOW_SEVERITY_IDENTIFIER + UNRESOLVED_RELATIVE_SUFIX,
         HIGH_SEVERITY_IDENTIFIER + UNRESOLVED_RELATIVE_SUFIX, PRIORITY_CHANGES_IDENTIFIER,
         RELATIVE_PRIORITY_CHANGES_IDENTIFIER, NUMBER_REPORTERS_IDENTIFIER,
@@ -172,12 +175,14 @@ public class IssueListMetricGenerator {
       metrics.add(unresolvedFrequency.getPct(priority));
 
       DescriptiveStatistics timeDescriptiveStats = timePerPriorityCounter.get(priority);
+
       metrics.add(timeDescriptiveStats.getMean());
       metrics.add(timeDescriptiveStats.getPercentile(50));
       metrics.add(timeDescriptiveStats.getStandardDeviation());
     }
 
     metrics.add(numberOfIssues.intValue());
+    metrics.add(generalResolutionTime.getPercentile(50));
 
     metrics.add(priorityFrequency.getPct("4") + priorityFrequency.getPct("5"));
     metrics.add(priorityFrequency.getPct("1") + priorityFrequency.getPct("2"));

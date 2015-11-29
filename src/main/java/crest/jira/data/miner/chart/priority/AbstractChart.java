@@ -30,7 +30,7 @@ import javax.imageio.ImageIO;
 public abstract class AbstractChart extends Application {
 
   private static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  private static final String FILE_NAME = "Board_ALLBOARDS_1448706770594";
+  private static final String FILE_NAME = "Board_2_1448807427822";
   private static final String CSV_EXTENSION = ".csv";
   private static final String PNG_EXTENSION = ".png";
 

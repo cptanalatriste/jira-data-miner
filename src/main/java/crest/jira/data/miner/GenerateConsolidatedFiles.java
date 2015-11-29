@@ -52,7 +52,7 @@ public class GenerateConsolidatedFiles {
     boardDao = DaoManager.createDao(connectionSource, Board.class);
     List<Board> allBoards = boardDao.queryForAll();
     for (Board board : allBoards) {
-      processBoard(connectionSource, board.getId(), false);
+      processBoard(connectionSource, board.getId(), true);
     }
 
   }
