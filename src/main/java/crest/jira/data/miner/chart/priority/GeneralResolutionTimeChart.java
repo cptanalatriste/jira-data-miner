@@ -1,6 +1,6 @@
 package crest.jira.data.miner.chart.priority;
 
-import crest.jira.data.miner.report.model.IssueListMetricGenerator;
+import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -8,7 +8,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
-
 
 import java.io.IOException;
 import java.util.List;
@@ -26,8 +25,8 @@ public class GeneralResolutionTimeChart extends AbstractChart {
 
   private void buildChart(Stage stage) throws IOException {
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        IssueListMetricGenerator.PERIOD_IDENTIFIER,
-        IssueListMetricGenerator.TOTAL_IDENTIFIER + IssueListMetricGenerator.RESTIME_MED_SUFFIX);
+        CsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        CsvConfiguration.TOTAL_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX);
 
     showAndSaveChart("General Resolution Time", stage, chartSeries);
 

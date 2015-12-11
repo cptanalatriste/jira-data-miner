@@ -1,5 +1,8 @@
 package crest.jira.data.miner.report.model;
 
+import crest.jira.data.retriever.model.User;
+
+import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -10,33 +13,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class IssueListMetricGenerator {
+public class JiraIssueBag implements CsvExportSupport {
 
-  private static Logger logger = Logger.getLogger(IssueListMetricGenerator.class.getName());
-
-  public static final String[] PRIORITIES = new String[] { "0", "1", "2", "3", "4", "5" };
-  public static final String[] PRIORITY_DESCRIPTIONS = new String[] { "No Priority", "Blocker",
-      "Critical", "Major", "Minor", "Trivial" };
-
-  public static final String RESTIME_STD_SUFFIX = " Resolution Time (std)";
-  public static final String RESTIME_MED_SUFFIX = " Resolution Time (med)";
-  public static final String RESTIME_AVG_SUFFIX = " Resolution Time (avg)";
-  public static final String UNRESOLVED_RELATIVE_SUFIX = " Unresolved (%)";
-  public static final String UNRESOLVED_SUFIX = " Unresolved";
-  public static final String RESOLVED_RELATIVE_SUFIX = " Resolved (%)";
-  public static final String RESOLVED_SUFIX = " Resolved";
-  public static final String RELATIVE_SUFIX = " (%)";
-  public static final String FREQUENCIES_SUFIX = "";
-
-  public static final String PERIOD_IDENTIFIER = "Period Identifier";
-  public static final String LOW_SEVERITY_IDENTIFIER = "Non-Severe";
-  public static final String HIGH_SEVERITY_IDENTIFIER = "Severe";
-  public static final String NUMBER_REPORTERS_IDENTIFIER = "Number of Reporters";
-  public static final String TOTAL_IDENTIFIER = "Total";
-  public static final String ISSUES_PER_REPORTER_IDENTIFIER = "Average Issues per Reporter";
-  public static final String CHANGERS_IDENTIFIER = "Number of Changers";
-  public static final String PRIORITY_CHANGES_IDENTIFIER = "Priority Changes";
-  public static final String RELATIVE_PRIORITY_CHANGES_IDENTIFIER = "Priority Changes (%)";
+  private static Logger logger = Logger.getLogger(JiraIssueBag.class.getName());
 
   private Frequency priorityFrequency = new Frequency();
   private Frequency reporterFrequency = new Frequency();
@@ -52,13 +31,18 @@ public class IssueListMetricGenerator {
   private List<ExtendedIssue> originalIssues;
   private String identifier;
 
+  private MultiValueMap<String, ExtendedIssue> issuesPerReporter = new MultiValueMap<>();
+
+  public JiraIssueBag() {
+  }
+
   /**
    * Calculates metrics for a specific list of Issues.
    * 
    * @param originalIssues
    *          List of issues.
    */
-  public IssueListMetricGenerator(String identifier, List<ExtendedIssue> originalIssues) {
+  public JiraIssueBag(String identifier, List<ExtendedIssue> originalIssues) {
     this.identifier = identifier;
     this.originalIssues = originalIssues;
     initializePriorityStatistics(timePerPriorityCounter);
@@ -66,20 +50,35 @@ public class IssueListMetricGenerator {
   }
 
   private void initializePriorityStatistics(HashMap<String, DescriptiveStatistics> counterMap) {
-    for (String priority : PRIORITIES) {
+    for (String priority : CsvConfiguration.PRIORITIES) {
       counterMap.put(priority, new DescriptiveStatistics());
     }
   }
 
   private void calculateMetrics() {
-    for (ExtendedIssue extendedIssue : originalIssues) {
-      try {
-        this.calculatePriorityMetrics(extendedIssue);
-        this.calculateResolutionTimeMetrics(extendedIssue);
-      } catch (Exception e) {
-        logger.log(Level.SEVERE, "Error while processing issue: " + extendedIssue, e);
-        throw new RuntimeException(e);
+    if (originalIssues != null && originalIssues.size() > 0) {
+      for (ExtendedIssue extendedIssue : originalIssues) {
+        try {
+          this.calculatePriorityMetrics(extendedIssue);
+          this.calculateResolutionTimeMetrics(extendedIssue);
+          this.calculateReporterMetrics(extendedIssue);
+        } catch (Exception e) {
+          logger.log(Level.SEVERE, "Error while processing issue: " + extendedIssue, e);
+          throw new RuntimeException(e);
+        }
       }
+    }
+  }
+
+  private void calculateReporterMetrics(ExtendedIssue extendedIssue) {
+
+    String reporterName = extendedIssue.getIssue().getReporter().getName();
+    reporterFrequency.addValue(reporterName);
+    issuesPerReporter.put(reporterName, extendedIssue);
+
+    if (extendedIssue.isDoesPriorityChanged()) {
+      priorityChanges += 1;
+      changerFrequency.addValue(reporterName);
     }
   }
 
@@ -107,66 +106,58 @@ public class IssueListMetricGenerator {
 
   private void calculatePriorityMetrics(ExtendedIssue extendedIssue) {
 
-    String reporterName = extendedIssue.getIssue().getReporter().getName();
-    reporterFrequency.addValue(reporterName);
-
     String originalPriorityId = extendedIssue.getOriginalPriority().getId();
     priorityFrequency.addValue(originalPriorityId);
 
-    if (extendedIssue.isDoesPriorityChanged()) {
-      priorityChanges += 1;
-      changerFrequency.addValue(reporterName);
-    }
   }
 
-  /**
-   * The header for a CVS Report.
-   * 
-   * @return Header as String.
-   */
-  public static String[] getMetricHeader() {
+  @Override
+  public String[] getCsvHeader() {
     List<String> headerAsString = new ArrayList<String>();
-    headerAsString.add(PERIOD_IDENTIFIER);
+    headerAsString.add(CsvConfiguration.TIME_PERIOD_IDENTIFIER);
 
-    for (String priority : PRIORITIES) {
-      String priorityDescription = PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)];
+    for (String priority : CsvConfiguration.PRIORITIES) {
+      String priorityDescription = CsvConfiguration.PRIORITY_DESCRIPTIONS[Integer
+          .parseInt(priority)];
 
       headerAsString.add(priorityDescription);
-      headerAsString.add(priorityDescription + RELATIVE_SUFIX);
-      headerAsString.add(priorityDescription + RESOLVED_SUFIX);
-      headerAsString.add(priorityDescription + RESOLVED_RELATIVE_SUFIX);
-      headerAsString.add(priorityDescription + UNRESOLVED_SUFIX);
-      headerAsString.add(priorityDescription + UNRESOLVED_RELATIVE_SUFIX);
-      headerAsString.add(priorityDescription + RESTIME_AVG_SUFFIX);
-      headerAsString.add(priorityDescription + RESTIME_MED_SUFFIX);
-      headerAsString.add(priorityDescription + RESTIME_STD_SUFFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.RESOLVED_SUFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.RESOLVED_RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.UNRESOLVED_SUFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_AVG_SUFFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_MED_SUFFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_STD_SUFFIX);
 
     }
 
-    headerAsString.addAll(Arrays.asList(TOTAL_IDENTIFIER, TOTAL_IDENTIFIER + RESTIME_MED_SUFFIX,
-        LOW_SEVERITY_IDENTIFIER + RELATIVE_SUFIX, HIGH_SEVERITY_IDENTIFIER + RELATIVE_SUFIX,
-        LOW_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX, HIGH_SEVERITY_IDENTIFIER + RESTIME_MED_SUFFIX,
-        LOW_SEVERITY_IDENTIFIER + UNRESOLVED_RELATIVE_SUFIX,
-        HIGH_SEVERITY_IDENTIFIER + UNRESOLVED_RELATIVE_SUFIX, PRIORITY_CHANGES_IDENTIFIER,
-        RELATIVE_PRIORITY_CHANGES_IDENTIFIER, NUMBER_REPORTERS_IDENTIFIER,
-        ISSUES_PER_REPORTER_IDENTIFIER, CHANGERS_IDENTIFIER, "Top Reporter", "Top Changer"));
+    headerAsString.addAll(Arrays.asList(CsvConfiguration.TOTAL_IDENTIFIER,
+        CsvConfiguration.TOTAL_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
+        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
+        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        CsvConfiguration.PRIORITY_CHANGES_IDENTIFIER,
+        CsvConfiguration.RELATIVE_PRIORITY_CHANGES_IDENTIFIER,
+        CsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
+        CsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER, CsvConfiguration.CHANGERS_IDENTIFIER,
+        "Top Reporter", "Top Changer"));
 
     return headerAsString.toArray(new String[headerAsString.size()]);
 
   }
 
-  /**
-   * Returns a representation of the collected metrics.
-   * 
-   * @return String representation of all the metric.
-   */
-  public List<Object> getMetricsAsList() {
+  @Override
+  public List<Object> getCsvRecord() {
     List<Object> metrics = new ArrayList<>();
 
     Double numberOfIssues = new Double(getNumberOfIssues());
 
     metrics.add(identifier);
-    for (String priority : PRIORITIES) {
+    for (String priority : CsvConfiguration.PRIORITIES) {
       metrics.add(priorityFrequency.getCount(priority));
       metrics.add(priorityFrequency.getPct(priority));
       metrics.add(resolvedFrequency.getCount(priority));
@@ -212,11 +203,29 @@ public class IssueListMetricGenerator {
   }
 
   public int getNumberOfIssues() {
-    return this.originalIssues.size();
+    return this.originalIssues != null ? this.originalIssues.size() : 0;
   }
 
   public int getPriorityChanges() {
     return priorityChanges;
+  }
+
+  public String getIdentifier() {
+    return identifier;
+  }
+
+  /**
+   * Returns a Bag of issues corresponding to an specific reporter.
+   * 
+   * @param reporter
+   *          Reporter.
+   * @return An issue bag for this reporter.
+   */
+  @SuppressWarnings("unchecked")
+  public JiraIssueBag getIssuesPerReporter(User reporter) {
+    List<ExtendedIssue> thisReporterIssues = (List<ExtendedIssue>) issuesPerReporter
+        .get(reporter.getName());
+    return new JiraIssueBag(this.identifier, thisReporterIssues);
   }
 
 }

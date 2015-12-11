@@ -1,8 +1,7 @@
 package crest.jira.data.miner.chart.board;
 
 import crest.jira.data.miner.chart.priority.AbstractChart;
-import crest.jira.data.miner.report.model.IssueListMetricGenerator;
-
+import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -27,13 +26,10 @@ public class ConsolidatedResolutionTimeChart extends AbstractChart {
 
   private void buildChart(Stage stage) throws IOException {
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        IssueListMetricGenerator.PERIOD_IDENTIFIER,
-        IssueListMetricGenerator.LOW_SEVERITY_IDENTIFIER
-            + IssueListMetricGenerator.RESTIME_MED_SUFFIX,
-        IssueListMetricGenerator.PRIORITY_DESCRIPTIONS[3]
-            + IssueListMetricGenerator.RESTIME_MED_SUFFIX,
-        IssueListMetricGenerator.HIGH_SEVERITY_IDENTIFIER
-            + IssueListMetricGenerator.RESTIME_MED_SUFFIX);
+        CsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.PRIORITY_DESCRIPTIONS[3] + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX);
 
     showAndSaveChart("Consolidated Resolution Time", stage, chartSeries);
   }

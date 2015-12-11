@@ -1,6 +1,6 @@
 package crest.jira.data.miner.chart.priority;
 
-import crest.jira.data.miner.report.model.IssueListMetricGenerator;
+import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
@@ -29,23 +29,28 @@ import javax.imageio.ImageIO;
 
 public abstract class AbstractChart extends Application {
 
-  private static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  private static final String FILE_NAME = "Board_2_1448807427822";
-  private static final String CSV_EXTENSION = ".csv";
+  public static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
+  private static final String FILE_NAME = "Board_ALLBOARDS_1448807375714";
+  public static final String CSV_EXTENSION = ".csv";
   private static final String PNG_EXTENSION = ".png";
 
   public static final String TIME_PERIOD_LABEL = "Time Period";
   public static final String BOARD_LABEL = "Board";
   public static final String FREQUENCY_LABEL = "Frequency";
   public static final String TIME_LABEL = "Time in Days";
+  public static final String RANGE_LABEL = "Range";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
 
   public static void main(String... args) {
     launch(args);
   }
 
-  public static String getCsvFileLocation() {
-    return DIRECTORY + FILE_NAME + CSV_EXTENSION;
+  public String getCsvFileLocation() {
+    return DIRECTORY + getFile();
+  }
+
+  public String getFile() {
+    return FILE_NAME + CSV_EXTENSION;
   }
 
   /**
@@ -59,7 +64,7 @@ public abstract class AbstractChart extends Application {
    *          Identifier of the values.
    * @return Map containing the series.
    */
-  public static List<Series<String, Number>> getSeries(String fileName, String recordIdentifier,
+  public List<Series<String, Number>> getSeries(String fileName, String recordIdentifier,
       String... valueIdentifiers) {
     Map<String, Series<String, Number>> series = new HashMap<String, Series<String, Number>>();
     List<Series<String, Number>> seriesAsList = new ArrayList<>();
@@ -71,14 +76,15 @@ public abstract class AbstractChart extends Application {
     }
 
     CSVParser csvParser = null;
-    CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(IssueListMetricGenerator.getMetricHeader());
+
+    CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader();
 
     try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
 
       csvParser = new CSVParser(bufferedReader, csvFormat);
       List<CSVRecord> records = csvParser.getRecords();
 
-      for (int index = 1; index < records.size(); index += 1) {
+      for (int index = 0; index < records.size(); index += 1) {
         CSVRecord csvRecord = records.get(index);
 
         String identifierValue = csvRecord.get(recordIdentifier);
@@ -120,7 +126,7 @@ public abstract class AbstractChart extends Application {
     XYChart<String, Number> chart = this.getChart();
     chart.getData().addAll(chartSeries);
 
-    String chartTitle = title + " - " + FILE_NAME;
+    String chartTitle = title + " - " + getFile();
     chart.setTitle(chartTitle);
 
     Scene scene = new Scene(chart, 800, 600);
@@ -143,9 +149,8 @@ public abstract class AbstractChart extends Application {
   public static String[] getPriorityLabelsBySuffix(String suffix) {
     List<String> labels = new ArrayList<>();
 
-    for (String priority : IssueListMetricGenerator.PRIORITIES) {
-      labels
-          .add(IssueListMetricGenerator.PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)] + suffix);
+    for (String priority : CsvConfiguration.PRIORITIES) {
+      labels.add(CsvConfiguration.PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)] + suffix);
     }
 
     return labels.toArray(new String[labels.size()]);

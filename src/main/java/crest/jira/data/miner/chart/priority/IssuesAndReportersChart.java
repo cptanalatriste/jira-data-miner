@@ -1,6 +1,6 @@
 package crest.jira.data.miner.chart.priority;
 
-import crest.jira.data.miner.report.model.IssueListMetricGenerator;
+import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -8,7 +8,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
-
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,9 +27,9 @@ public class IssuesAndReportersChart extends AbstractChart {
   private void buildChart(Stage stage) throws FileNotFoundException, IOException {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        IssueListMetricGenerator.PERIOD_IDENTIFIER, IssueListMetricGenerator.TOTAL_IDENTIFIER,
-        IssueListMetricGenerator.NUMBER_REPORTERS_IDENTIFIER,
-        IssueListMetricGenerator.ISSUES_PER_REPORTER_IDENTIFIER);
+        CsvConfiguration.TIME_PERIOD_IDENTIFIER, CsvConfiguration.TOTAL_IDENTIFIER,
+        CsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
+        CsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER);
 
     showAndSaveChart("Issues and Reporters", stage, chartSeries);
   }

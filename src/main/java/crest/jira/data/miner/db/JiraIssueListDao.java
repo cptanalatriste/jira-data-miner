@@ -12,6 +12,7 @@ import crest.jira.data.retriever.map.ResponseList;
 import crest.jira.data.retriever.model.ChangeLogItem;
 import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
+import crest.jira.data.retriever.model.User;
 
 import org.apache.commons.collections4.map.MultiValueMap;
 
@@ -19,7 +20,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class JiraIssueListDao {
 
@@ -126,6 +129,25 @@ public class JiraIssueListDao {
     }
 
     return issuesPerBoard;
+  }
+
+  /**
+   * Returns the total list of reporters for a given board.
+   * 
+   * @param boardId
+   *          Board identifier.
+   * @return List of reporters.
+   */
+  public Set<User> getReporterCatalogPerBoard(String boardId) {
+    Set<User> reporterCatalog = new HashSet<>();
+    for (ExtendedIssue extendedIssue : issueList) {
+
+      if (boardId.equals(extendedIssue.getIssue().getBoardId())) {
+        reporterCatalog.add(extendedIssue.getIssue().getReporter());
+      }
+    }
+
+    return reporterCatalog;
   }
 
   /**

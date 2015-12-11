@@ -1,6 +1,6 @@
 package crest.jira.data.miner.chart.priority;
 
-import crest.jira.data.miner.report.model.IssueListMetricGenerator;
+import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -26,8 +26,8 @@ public class MedianResolutionTimeChart extends AbstractChart {
   private void buildChart(Stage stage) throws IOException {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        IssueListMetricGenerator.PERIOD_IDENTIFIER,
-        getPriorityLabelsBySuffix(IssueListMetricGenerator.RESTIME_MED_SUFFIX));
+        CsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        getPriorityLabelsBySuffix(CsvConfiguration.RESTIME_MED_SUFFIX));
 
     showAndSaveChart("Median Resolution Time", stage, chartSeries);
   }

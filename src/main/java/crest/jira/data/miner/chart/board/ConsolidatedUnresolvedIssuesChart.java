@@ -1,7 +1,7 @@
 package crest.jira.data.miner.chart.board;
 
 import crest.jira.data.miner.chart.priority.AbstractChart;
-import crest.jira.data.miner.report.model.IssueListMetricGenerator;
+import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -27,13 +27,10 @@ public class ConsolidatedUnresolvedIssuesChart extends AbstractChart {
 
   private void buildChart(Stage stage) throws IOException {
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        IssueListMetricGenerator.PERIOD_IDENTIFIER,
-        IssueListMetricGenerator.LOW_SEVERITY_IDENTIFIER
-            + IssueListMetricGenerator.UNRESOLVED_RELATIVE_SUFIX,
-        IssueListMetricGenerator.PRIORITY_DESCRIPTIONS[3]
-            + IssueListMetricGenerator.UNRESOLVED_RELATIVE_SUFIX,
-        IssueListMetricGenerator.HIGH_SEVERITY_IDENTIFIER
-            + IssueListMetricGenerator.UNRESOLVED_RELATIVE_SUFIX);
+        CsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        CsvConfiguration.PRIORITY_DESCRIPTIONS[3] + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX);
 
     showAndSaveChart("Consolidated Unresolved Percentage", stage, chartSeries);
 
