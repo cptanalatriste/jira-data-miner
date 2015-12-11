@@ -1,5 +1,6 @@
 package crest.jira.data.miner.chart.priority;
 
+import crest.jira.data.miner.chart.AbstractChart;
 import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.CategoryAxis;

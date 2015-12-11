@@ -1,5 +1,6 @@
 package crest.jira.data.miner.chart.priority;
 
+import crest.jira.data.miner.chart.AbstractChart;
 import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.BarChart;
@@ -40,8 +41,8 @@ public class MedianResolutionTimeChart extends AbstractChart {
     NumberAxis counterAxis = new NumberAxis();
     counterAxis.setLabel(TIME_LABEL);
 
-    BarChart<String, Number> scatterChart = new BarChart<String, Number>(periodAxis, counterAxis);
-    return scatterChart;
+    BarChart<String, Number> barChart = new BarChart<String, Number>(periodAxis, counterAxis);
+    return barChart;
   }
 
 }

@@ -1,4 +1,4 @@
-package crest.jira.data.miner.chart.priority;
+package crest.jira.data.miner.chart;
 
 import crest.jira.data.miner.report.model.CsvConfiguration;
 

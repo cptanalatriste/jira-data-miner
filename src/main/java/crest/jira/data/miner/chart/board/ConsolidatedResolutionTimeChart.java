@@ -1,6 +1,6 @@
 package crest.jira.data.miner.chart.board;
 
-import crest.jira.data.miner.chart.priority.AbstractChart;
+import crest.jira.data.miner.chart.AbstractChart;
 import crest.jira.data.miner.report.model.CsvConfiguration;
 
 import javafx.scene.chart.BarChart;
