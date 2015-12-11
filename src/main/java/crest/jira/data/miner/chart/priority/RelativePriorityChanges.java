@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class RelativePriorityChanges extends AbstractChart {
+public class RelativePriorityChanges extends AbstractChart<String, Number> {
 
   public static void main(String... args) {
     launch(args);

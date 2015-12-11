@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class ConsolidatedSeverityChart extends AbstractChart {
+public class ConsolidatedSeverityChart extends AbstractChart<String, Number> {
 
   public static void main(String... args) {
     launch(args);
@@ -28,9 +28,9 @@ public class ConsolidatedSeverityChart extends AbstractChart {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
         CsvConfiguration.TIME_PERIOD_IDENTIFIER,
-        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
+        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
         CsvConfiguration.PRIORITY_DESCRIPTIONS[3] + CsvConfiguration.RELATIVE_SUFIX,
-        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX);
+        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX);
 
     showAndSaveChart("Consolidated Severity", stage, chartSeries);
   }

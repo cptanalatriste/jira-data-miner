@@ -27,7 +27,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-public abstract class AbstractChart extends Application {
+public abstract class AbstractChart<X, Y> extends Application {
 
   public static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
   private static final String FILE_NAME = "Board_ALLBOARDS_1448807375714";
@@ -40,6 +40,8 @@ public abstract class AbstractChart extends Application {
   public static final String TIME_LABEL = "Time in Days";
   public static final String RANGE_LABEL = "Range";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
+  public static final String NON_SEVERE_ASSIGNMENTS_LABEL = "Non Severe (%)";
+  public static final String SEVERE_ASSIGNMENTS_LABEL = "Severe (%)";
 
   public static void main(String... args) {
     launch(args);
@@ -75,31 +77,20 @@ public abstract class AbstractChart extends Application {
       series.put(valueIdentifier, serie);
     }
 
-    CSVParser csvParser = null;
+    List<CSVRecord> records = getCsvRecords(fileName);
 
-    CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader();
+    for (int index = 0; index < records.size(); index += 1) {
+      CSVRecord csvRecord = records.get(index);
 
-    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
+      String identifierValue = csvRecord.get(recordIdentifier);
 
-      csvParser = new CSVParser(bufferedReader, csvFormat);
-      List<CSVRecord> records = csvParser.getRecords();
+      for (String valueIdentifier : valueIdentifiers) {
+        Double numericValue = Double.parseDouble(csvRecord.get(valueIdentifier));
 
-      for (int index = 0; index < records.size(); index += 1) {
-        CSVRecord csvRecord = records.get(index);
-
-        String identifierValue = csvRecord.get(recordIdentifier);
-
-        for (String valueIdentifier : valueIdentifiers) {
-          Double numericValue = Double.parseDouble(csvRecord.get(valueIdentifier));
-
-          if (!numericValue.isNaN()) {
-            series.get(valueIdentifier).getData().add(new Data<>(identifierValue, numericValue));
-          }
+        if (!numericValue.isNaN()) {
+          series.get(valueIdentifier).getData().add(new Data<>(identifierValue, numericValue));
         }
       }
-
-    } catch (Exception ex) {
-      ex.printStackTrace();
     }
 
     for (String label : valueIdentifiers) {
@@ -109,7 +100,22 @@ public abstract class AbstractChart extends Application {
     return seriesAsList;
   }
 
-  public abstract XYChart<String, Number> getChart();
+  protected List<CSVRecord> getCsvRecords(String fileName) {
+    List<CSVRecord> csvRecords = null;
+    CSVParser csvParser = null;
+    CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader();
+
+    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
+      csvParser = new CSVParser(bufferedReader, csvFormat);
+      csvRecords = csvParser.getRecords();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+
+    return csvRecords;
+  }
+
+  public abstract XYChart<X, Y> getChart();
 
   /**
    * Assigns a title to a chart and shows it on the Screen.
@@ -121,10 +127,13 @@ public abstract class AbstractChart extends Application {
    * @throws IOException
    *           Image writing might fail.
    */
-  public void showAndSaveChart(String title, Stage stage, List<Series<String, Number>> chartSeries)
+  public void showAndSaveChart(String title, Stage stage, List<Series<X, Y>> chartSeries)
       throws IOException {
-    XYChart<String, Number> chart = this.getChart();
-    chart.getData().addAll(chartSeries);
+    XYChart<X, Y> chart = this.getChart();
+
+    for (Series<X, Y> oneSerie : chartSeries) {
+      chart.getData().add(oneSerie);
+    }
 
     String chartTitle = title + " - " + getFile();
     chart.setTitle(chartTitle);

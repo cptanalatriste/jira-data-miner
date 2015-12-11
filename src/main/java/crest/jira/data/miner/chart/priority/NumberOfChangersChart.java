@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class NumberOfChangersChart extends AbstractChart {
+public class NumberOfChangersChart extends AbstractChart<String, Number> {
 
   public static void main(String... args) {
     launch(args);

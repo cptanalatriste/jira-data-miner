@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class PriorityFrequenciesChart extends AbstractChart {
+public class PriorityFrequenciesChart extends AbstractChart<String, Number> {
 
   private static final String CHART_TITLE = "Frequency according Priority";
 

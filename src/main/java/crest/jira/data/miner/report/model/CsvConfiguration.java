@@ -17,8 +17,8 @@ public class CsvConfiguration {
   public static final String FREQUENCIES_SUFIX = "";
 
   public static final String TIME_PERIOD_IDENTIFIER = "Period Identifier";
-  public static final String LOW_SEVERITY_IDENTIFIER = "Non-Severe";
-  public static final String HIGH_SEVERITY_IDENTIFIER = "Severe";
+  public static final String NON_SEVERE_IDENTIFIER = "Non-Severe";
+  public static final String SEVERE_IDENTIFIER = "Severe";
   public static final String NUMBER_REPORTERS_IDENTIFIER = "Number of Reporters";
   public static final String TOTAL_IDENTIFIER = "Total";
   public static final String ISSUES_PER_REPORTER_IDENTIFIER = "Average Issues per Reporter";

@@ -134,12 +134,12 @@ public class JiraIssueBag implements CsvExportSupport {
 
     headerAsString.addAll(Arrays.asList(CsvConfiguration.TOTAL_IDENTIFIER,
         CsvConfiguration.TOTAL_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
-        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
-        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
-        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
-        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
-        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
-        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
+        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
+        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
         CsvConfiguration.PRIORITY_CHANGES_IDENTIFIER,
         CsvConfiguration.RELATIVE_PRIORITY_CHANGES_IDENTIFIER,
         CsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
@@ -159,7 +159,7 @@ public class JiraIssueBag implements CsvExportSupport {
     metrics.add(identifier);
     for (String priority : CsvConfiguration.PRIORITIES) {
       metrics.add(priorityFrequency.getCount(priority));
-      metrics.add(priorityFrequency.getPct(priority));
+      metrics.add(getRelativeFrequencyByPriority(priority));
       metrics.add(resolvedFrequency.getCount(priority));
       metrics.add(resolvedFrequency.getPct(priority));
       metrics.add(unresolvedFrequency.getCount(priority));
@@ -175,8 +175,8 @@ public class JiraIssueBag implements CsvExportSupport {
     metrics.add(numberOfIssues.intValue());
     metrics.add(generalResolutionTime.getPercentile(50));
 
-    metrics.add(priorityFrequency.getPct("4") + priorityFrequency.getPct("5"));
-    metrics.add(priorityFrequency.getPct("1") + priorityFrequency.getPct("2"));
+    metrics.add(getNonSevereRelativeFrequency());
+    metrics.add(getSevereRelativeFrequency());
 
     metrics.add(nonSevereResolutionTime.getPercentile(50));
     metrics.add(severeResolutionTime.getPercentile(50));
@@ -196,6 +196,18 @@ public class JiraIssueBag implements CsvExportSupport {
     metrics.add(reporterFrequency.getMode().isEmpty() ? null : reporterFrequency.getMode().get(0));
     metrics.add(changerFrequency.getMode().isEmpty() ? null : changerFrequency.getMode().get(0));
     return metrics;
+  }
+
+  public double getRelativeFrequencyByPriority(String priority) {
+    return priorityFrequency.getPct(priority);
+  }
+
+  public double getSevereRelativeFrequency() {
+    return priorityFrequency.getPct("1") + priorityFrequency.getPct("2");
+  }
+
+  public double getNonSevereRelativeFrequency() {
+    return priorityFrequency.getPct("4") + priorityFrequency.getPct("5");
   }
 
   public int getNumberOfReporters() {

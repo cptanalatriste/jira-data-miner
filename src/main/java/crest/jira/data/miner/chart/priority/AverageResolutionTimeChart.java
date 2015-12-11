@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class AverageResolutionTimeChart extends AbstractChart {
+public class AverageResolutionTimeChart extends AbstractChart<String, Number> {
 
   public static void main(String... args) {
     launch(args);

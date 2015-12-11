@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class ConsolidatedResolutionTimeChart extends AbstractChart {
+public class ConsolidatedResolutionTimeChart extends AbstractChart<String, Number> {
 
   public static void main(String... args) {
     launch(args);
@@ -27,9 +27,9 @@ public class ConsolidatedResolutionTimeChart extends AbstractChart {
   private void buildChart(Stage stage) throws IOException {
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
         CsvConfiguration.TIME_PERIOD_IDENTIFIER,
-        CsvConfiguration.LOW_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
+        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
         CsvConfiguration.PRIORITY_DESCRIPTIONS[3] + CsvConfiguration.RESTIME_MED_SUFFIX,
-        CsvConfiguration.HIGH_SEVERITY_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX);
+        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX);
 
     showAndSaveChart("Consolidated Resolution Time", stage, chartSeries);
   }

@@ -43,6 +43,9 @@ public class UserJiraIssueBag implements CsvExportSupport {
 
     for (String periodIdentifier : periodKeys) {
       headerAsString.add(CsvConfiguration.TOTAL_IDENTIFIER + " " + periodIdentifier);
+      headerAsString.add(CsvConfiguration.NON_SEVERE_IDENTIFIER + " " + periodIdentifier);
+      headerAsString.add(CsvConfiguration.SEVERE_IDENTIFIER + " " + periodIdentifier);
+      headerAsString.add(CsvConfiguration.PRIORITY_DESCRIPTIONS[3] + " " + periodIdentifier);
     }
 
     headerAsString.add(CsvConfiguration.ABSTENTIONS_IDENTIFIER);
@@ -57,10 +60,15 @@ public class UserJiraIssueBag implements CsvExportSupport {
     metrics.add(this.user.getName());
 
     for (String periodIdentifier : periodKeys) {
-      int issuesPerPeriod = this.periodIssueBags.get(periodIdentifier).getNumberOfIssues();
+      JiraIssueBag periodBag = this.periodIssueBags.get(periodIdentifier);
+
+      int issuesPerPeriod = periodBag.getNumberOfIssues();
       issuesPerPeriodFrequency.addValue(issuesPerPeriod);
 
       metrics.add(issuesPerPeriod);
+      metrics.add(periodBag.getNonSevereRelativeFrequency());
+      metrics.add(periodBag.getSevereRelativeFrequency());
+      metrics.add(periodBag.getRelativeFrequencyByPriority("3"));
     }
 
     long abstentions = issuesPerPeriodFrequency.getCount(0);
