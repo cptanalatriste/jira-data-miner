@@ -26,7 +26,8 @@ public class RelativePriorityChanges extends AbstractChart {
   private void buildChart(Stage stage) throws IOException {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        CsvConfiguration.TIME_PERIOD_IDENTIFIER, CsvConfiguration.RELATIVE_PRIORITY_CHANGES_IDENTIFIER);
+        CsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        CsvConfiguration.RELATIVE_PRIORITY_CHANGES_IDENTIFIER);
 
     showAndSaveChart("Priority Changes as Percentage", stage, chartSeries);
   }
