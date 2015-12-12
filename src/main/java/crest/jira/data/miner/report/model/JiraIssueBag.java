@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class JiraIssueBag implements CsvExportSupport {
+public class JiraIssueBag<T> implements CsvExportSupport {
 
   private static Logger logger = Logger.getLogger(JiraIssueBag.class.getName());
 
@@ -29,7 +29,7 @@ public class JiraIssueBag implements CsvExportSupport {
   private int priorityChanges = 0;
   private HashMap<String, DescriptiveStatistics> timePerPriorityCounter = new HashMap<>();
   private List<ExtendedIssue> originalIssues;
-  private String identifier;
+  private T identifier;
 
   private MultiValueMap<String, ExtendedIssue> issuesPerReporter = new MultiValueMap<>();
 
@@ -42,7 +42,7 @@ public class JiraIssueBag implements CsvExportSupport {
    * @param originalIssues
    *          List of issues.
    */
-  public JiraIssueBag(String identifier, List<ExtendedIssue> originalIssues) {
+  public JiraIssueBag(T identifier, List<ExtendedIssue> originalIssues) {
     this.identifier = identifier;
     this.originalIssues = originalIssues;
     initializePriorityStatistics(timePerPriorityCounter);
@@ -156,7 +156,7 @@ public class JiraIssueBag implements CsvExportSupport {
 
     Double numberOfIssues = new Double(getNumberOfIssues());
 
-    metrics.add(identifier);
+    metrics.add(identifier.toString());
     for (String priority : CsvConfiguration.PRIORITIES) {
       metrics.add(priorityFrequency.getCount(priority));
       metrics.add(getRelativeFrequencyByPriority(priority));
@@ -222,7 +222,7 @@ public class JiraIssueBag implements CsvExportSupport {
     return priorityChanges;
   }
 
-  public String getIdentifier() {
+  public T getIdentifier() {
     return identifier;
   }
 
@@ -234,10 +234,10 @@ public class JiraIssueBag implements CsvExportSupport {
    * @return An issue bag for this reporter.
    */
   @SuppressWarnings("unchecked")
-  public JiraIssueBag getIssuesPerReporter(User reporter) {
+  public JiraIssueBag<T> getIssuesPerReporter(User reporter) {
     List<ExtendedIssue> thisReporterIssues = (List<ExtendedIssue>) issuesPerReporter
         .get(reporter.getName());
-    return new JiraIssueBag(this.identifier, thisReporterIssues);
+    return new JiraIssueBag<T>(this.identifier, thisReporterIssues);
   }
 
 }

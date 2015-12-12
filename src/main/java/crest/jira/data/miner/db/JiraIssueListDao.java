@@ -10,9 +10,12 @@ import com.j256.ormlite.support.ConnectionSource;
 import crest.jira.data.miner.report.model.ExtendedIssue;
 import crest.jira.data.retriever.map.ResponseList;
 import crest.jira.data.retriever.model.ChangeLogItem;
+import crest.jira.data.retriever.model.FixVersionPerIssue;
 import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
 import crest.jira.data.retriever.model.User;
+import crest.jira.data.retriever.model.Version;
+import crest.jira.data.retriever.model.VersionPerIssue;
 
 import org.apache.commons.collections4.map.MultiValueMap;
 
@@ -32,6 +35,10 @@ public class JiraIssueListDao {
   private Dao<Issue, String> issueDao;
   private Dao<History, String> historyDao;
   private Dao<ChangeLogItem, String> changeLogItemDao;
+  private Dao<Version, String> versionDao;
+  private Dao<FixVersionPerIssue, String> fixVersionDao;
+  private Dao<VersionPerIssue, String> affectedVersionDao;
+
   private List<ExtendedIssue> issueList = new ArrayList<ExtendedIssue>();
 
   /**
@@ -46,6 +53,9 @@ public class JiraIssueListDao {
     this.issueDao = DaoManager.createDao(connectionSource, Issue.class);
     this.historyDao = DaoManager.createDao(connectionSource, History.class);
     this.changeLogItemDao = DaoManager.createDao(connectionSource, ChangeLogItem.class);
+    this.versionDao = DaoManager.createDao(connectionSource, Version.class);
+    this.fixVersionDao = DaoManager.createDao(connectionSource, FixVersionPerIssue.class);
+    this.affectedVersionDao = DaoManager.createDao(connectionSource, VersionPerIssue.class);
   }
 
   /**
@@ -94,6 +104,32 @@ public class JiraIssueListDao {
 
     List<Issue> issuesFromDb = issueDao.query(preparedQuery);
     loadHistoryForIssueList(issuesFromDb);
+    loadVersionsForIssueList();
+  }
+
+  private void loadVersionsForIssueList() throws SQLException {
+    for (ExtendedIssue extendedIssue : this.issueList) {
+      String issueId = extendedIssue.getIssue().getId();
+
+      List<Version> versionList = new ArrayList<>();
+      List<FixVersionPerIssue> fixVersions = fixVersionDao.queryForEq("issueId", issueId);
+      for (FixVersionPerIssue fixVersion : fixVersions) {
+        versionList.add(versionDao.queryForId(fixVersion.getVersion().getId()));
+      }
+      extendedIssue.getIssue().setFixVersions(versionList.toArray(new Version[versionList.size()]));
+
+      versionList.clear();
+      List<VersionPerIssue> affectedVersions = affectedVersionDao.queryForEq("issueId", issueId);
+      for (VersionPerIssue affectedVersion : affectedVersions) {
+        versionList.add(versionDao.queryForId(affectedVersion.getVersion().getId()));
+      }
+
+      extendedIssue.getIssue().setVersions(versionList.toArray(new Version[versionList.size()]));
+
+      String projectId = extendedIssue.getIssue().getProject().getId();
+      List<Version> projectVersions = versionDao.queryForEq("projectId", projectId);
+      extendedIssue.setProjectVersions(projectVersions);
+    }
   }
 
   private void loadHistoryForIssueList(List<Issue> issuesFromDb) throws SQLException {
@@ -129,6 +165,22 @@ public class JiraIssueListDao {
     }
 
     return issuesPerBoard;
+  }
+
+  /**
+   * Given a list of issue, it organizes it in buckets based on the closest
+   * release.
+   * 
+   * @return MultiValueMap, containing the buckets.
+   */
+  public MultiValueMap<Version, ExtendedIssue> organizeInReleases() {
+    MultiValueMap<Version, ExtendedIssue> issuesPerRelease = new MultiValueMap<>();
+
+    for (ExtendedIssue extendedIssue : issueList) {
+      Version closestRelease = extendedIssue.getClosestRelease();
+      issuesPerRelease.put(closestRelease, extendedIssue);
+    }
+    return issuesPerRelease;
   }
 
   /**

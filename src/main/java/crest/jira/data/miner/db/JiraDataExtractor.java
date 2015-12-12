@@ -8,6 +8,7 @@ import crest.jira.data.retriever.EpicRetriever;
 import crest.jira.data.retriever.FieldRetriever;
 import crest.jira.data.retriever.JiraApiConfiguration;
 import crest.jira.data.retriever.SprintRetriever;
+import crest.jira.data.retriever.VersionRetriever;
 import crest.jira.data.retriever.db.JiraEntityMiner;
 import crest.jira.data.retriever.map.IssueWithCustomFields;
 import crest.jira.data.retriever.map.ResponseList;
@@ -102,7 +103,6 @@ public class JiraDataExtractor {
     setupDatabase(connectionSource);
     readAndWriteBoardData();
   }
-  
 
   private static void readAndWriteBoardData() throws Exception {
 
@@ -184,9 +184,9 @@ public class JiraDataExtractor {
         ClosedSprintPerIssue.class, connectionSource);
   }
 
-
   private static int processBoard(String boardId) throws Exception, SQLException {
     readAndWriteEpicData(boardId);
+    readAndWriteVersionData(boardId);
     clearBeforeLoading(boardId);
     ResponseList<Sprint> sprints = readAndWriteSprintData(boardId);
     int issuesWritten = readAndWriteIssueData(boardId,
@@ -237,6 +237,12 @@ public class JiraDataExtractor {
     }
 
     epicMiner.writeToDatabase(epics);
+  }
+
+  private static void readAndWriteVersionData(String boardId) throws Exception {
+    VersionRetriever versionRetriever = new VersionRetriever(restClient, jiraConfiguration);
+    List<Version> versions = versionRetriever.getAllVersions(boardId);
+    versionMiner.writeToDatabase(versions);
   }
 
   private static ResponseList<Sprint> readAndWriteSprintData(String boardId) throws Exception {

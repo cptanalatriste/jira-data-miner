@@ -30,7 +30,7 @@ import javax.imageio.ImageIO;
 public abstract class AbstractChart<X, Y> extends Application {
 
   public static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  private static final String FILE_NAME = "Board_ALLBOARDS_1448807375714";
+  private static final String FILE_NAME = "Board_2_1449945441021";
   public static final String CSV_EXTENSION = ".csv";
   private static final String PNG_EXTENSION = ".png";
 
@@ -113,6 +113,21 @@ public abstract class AbstractChart<X, Y> extends Application {
     }
 
     return csvRecords;
+  }
+
+  protected Map<String, Integer> getCsvHeaderMap(String fileName) {
+    Map<String, Integer> headerMap = null;
+
+    CSVParser csvParser = null;
+    CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader();
+
+    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
+      csvParser = new CSVParser(bufferedReader, csvFormat);
+      headerMap = csvParser.getHeaderMap();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return headerMap;
   }
 
   public abstract XYChart<X, Y> getChart();

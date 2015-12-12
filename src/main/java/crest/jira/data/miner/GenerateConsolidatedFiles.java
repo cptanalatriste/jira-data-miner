@@ -10,8 +10,10 @@ import crest.jira.data.miner.report.model.CsvExportSupport;
 import crest.jira.data.miner.report.model.ExtendedIssue;
 import crest.jira.data.miner.report.model.JiraIssueBag;
 import crest.jira.data.miner.report.model.UserJiraIssueBag;
+import crest.jira.data.miner.report.model.VersionComparator;
 import crest.jira.data.retriever.model.Board;
 import crest.jira.data.retriever.model.User;
+import crest.jira.data.retriever.model.Version;
 
 import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.commons.csv.CSVFormat;
@@ -23,6 +25,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -68,8 +72,15 @@ public class GenerateConsolidatedFiles {
     analyser.loadAllBugs();
 
     MultiValueMap<String, ExtendedIssue> issuesPerBoard = analyser.organizeInBoards();
-    getBagsPerTimePeriod(ALLBOARDS_KEY, issuesPerBoard);
+    List<CsvExportSupport> issueBags = getBagsPerTimePeriod(issuesPerBoard,
+        new Comparator<String>() {
+          @Override
+          public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+          }
+        });
 
+    generateCsvFile(ALLBOARDS_KEY, issueBags);
   }
 
   private static void processBoard(ConnectionSource connectionSource, String boardId,
@@ -77,21 +88,20 @@ public class GenerateConsolidatedFiles {
     JiraIssueListDao issueListDao = new JiraIssueListDao(connectionSource);
     issueListDao.loadBoardIssues(boardId, onlyBugs);
 
-    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = issueListDao.organizeInTimeFrames();
-    List<CsvExportSupport> issueBags = getBagsPerTimePeriod(boardId, issuesPerTimeFrame);
+    MultiValueMap<Version, ExtendedIssue> issuesInGroups = issueListDao.organizeInReleases();
+    List<CsvExportSupport> issueBags = getBagsPerTimePeriod(issuesInGroups,
+        new VersionComparator());
+
     generateCsvFile("Board_" + boardId, issueBags);
 
-    Object[] periodKeys = issuesPerTimeFrame.keySet().toArray();
-    Arrays.sort(periodKeys);
-
     Object[] reporters = issueListDao.getReporterCatalogPerBoard(boardId).toArray();
-
     List<CsvExportSupport> userIssueBags = getBagsPerUser(reporters, issueBags);
     generateCsvFile("Reporters_Board_" + boardId, userIssueBags);
 
   }
 
-  private static List<CsvExportSupport> getBagsPerUser(Object[] reporters,
+  @SuppressWarnings("unchecked")
+  private static <T> List<CsvExportSupport> getBagsPerUser(Object[] reporters,
       List<CsvExportSupport> issueBags) {
 
     if (reporters.length < 1) {
@@ -102,9 +112,9 @@ public class GenerateConsolidatedFiles {
 
     for (Object reporterAsObject : reporters) {
       User reporter = (User) reporterAsObject;
-      UserJiraIssueBag userJiraIssueBag = new UserJiraIssueBag(reporter);
+      UserJiraIssueBag<T> userJiraIssueBag = new UserJiraIssueBag<T>(reporter);
       for (CsvExportSupport issueBag : issueBags) {
-        userJiraIssueBag.addBag((JiraIssueBag) issueBag);
+        userJiraIssueBag.addBag((JiraIssueBag<T>) issueBag);
       }
 
       userIssueBags.add(userJiraIssueBag);
@@ -114,19 +124,19 @@ public class GenerateConsolidatedFiles {
   }
 
   @SuppressWarnings("unchecked")
-  private static List<CsvExportSupport> getBagsPerTimePeriod(String groupId,
-      MultiValueMap<String, ExtendedIssue> issuesPerKey) throws IOException {
+  private static <T> List<CsvExportSupport> getBagsPerTimePeriod(
+      MultiValueMap<T, ExtendedIssue> issuesPerKey, Comparator<T> comparator) throws IOException {
 
     List<CsvExportSupport> issueBags = new ArrayList<>();
 
-    Object[] keysAsArray = issuesPerKey.keySet().toArray();
-    Arrays.sort(keysAsArray);
+    List<T> keysAsCollection = new ArrayList<T>(issuesPerKey.keySet());
+    Collections.sort(keysAsCollection, comparator);
 
-    for (Object oneKey : keysAsArray) {
-      String key = (String) oneKey;
+    for (Object oneKey : keysAsCollection) {
+      T key = (T) oneKey;
 
       List<ExtendedIssue> listOfIssues = (List<ExtendedIssue>) issuesPerKey.get(oneKey);
-      JiraIssueBag issueBag = new JiraIssueBag(key, listOfIssues);
+      JiraIssueBag<T> issueBag = new JiraIssueBag<T>(key, listOfIssues);
       issueBags.add(issueBag);
     }
 

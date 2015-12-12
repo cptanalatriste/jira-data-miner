@@ -4,6 +4,7 @@ import crest.jira.data.retriever.model.ChangeLogItem;
 import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
 import crest.jira.data.retriever.model.Priority;
+import crest.jira.data.retriever.model.Version;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -16,7 +17,7 @@ import java.util.List;
 public class ExtendedIssue {
 
   public static final String NO_PRIORITY_ID = "0";
-
+  public static final Version NO_RELEASE = new Version("NO RELEASE", new Date(0L));
   private static final long MILISECONDS_IN_A_DATE = 24 * 60 * 60 * 1000;
 
   private Issue issue;
@@ -24,6 +25,8 @@ public class ExtendedIssue {
   private boolean doesPriorityChanged;
   private double resolutionTime = 0.0;
   private boolean isResolved = false;
+
+  private List<Version> projectVersions;
 
   /**
    * Calculates additional fields that are necessary for analysis.
@@ -137,6 +140,36 @@ public class ExtendedIssue {
 
   public Issue getIssue() {
     return issue;
+  }
+
+  /**
+   * Returns the version that's the closest to the report of the Issue.
+   * 
+   * @return Closest version.
+   */
+  public Version getClosestRelease() {
+
+    for (Version version : projectVersions) {
+      Date releaseDate = version.getReleaseDate();
+      if (releaseDate != null && releaseDate.compareTo(this.getIssue().getCreated()) > 0) {
+        return version;
+      }
+    }
+
+    return NO_RELEASE;
+  }
+
+  /**
+   * Stores the list of versions for the Project related to this issue, and
+   * sorts it.
+   * 
+   * @param projectVersions
+   *          List of project versions.
+   */
+  public void setProjectVersions(List<Version> projectVersions) {
+    this.projectVersions = projectVersions;
+
+    Collections.sort(this.projectVersions, new VersionComparator());
   }
 
   @Override

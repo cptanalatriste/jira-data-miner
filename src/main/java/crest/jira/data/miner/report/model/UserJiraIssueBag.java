@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UserJiraIssueBag implements CsvExportSupport {
+public class UserJiraIssueBag<T> implements CsvExportSupport {
 
   private User user;
-  private List<String> periodKeys;
-  private Map<String, JiraIssueBag> periodIssueBags;
+  private List<T> groupKeys;
+  private Map<T, JiraIssueBag<T>> periodIssueBags;
   private Frequency issuesPerPeriodFrequency = new Frequency();
 
   public UserJiraIssueBag() {
@@ -28,11 +28,11 @@ public class UserJiraIssueBag implements CsvExportSupport {
   public UserJiraIssueBag(User user) {
     this.user = user;
     this.periodIssueBags = new HashMap<>();
-    this.periodKeys = new ArrayList<>();
+    this.groupKeys = new ArrayList<>();
   }
 
-  public void addBag(JiraIssueBag issueBag) {
-    this.periodKeys.add(issueBag.getIdentifier());
+  public void addBag(JiraIssueBag<T> issueBag) {
+    this.groupKeys.add(issueBag.getIdentifier());
     this.periodIssueBags.put(issueBag.getIdentifier(), issueBag.getIssuesPerReporter(this.user));
   }
 
@@ -41,11 +41,11 @@ public class UserJiraIssueBag implements CsvExportSupport {
     List<String> headerAsString = new ArrayList<String>();
     headerAsString.add(CsvConfiguration.USER_IDENTIFIER);
 
-    for (String periodIdentifier : periodKeys) {
-      headerAsString.add(CsvConfiguration.TOTAL_IDENTIFIER + " " + periodIdentifier);
-      headerAsString.add(CsvConfiguration.NON_SEVERE_IDENTIFIER + " " + periodIdentifier);
-      headerAsString.add(CsvConfiguration.SEVERE_IDENTIFIER + " " + periodIdentifier);
-      headerAsString.add(CsvConfiguration.PRIORITY_DESCRIPTIONS[3] + " " + periodIdentifier);
+    for (T groupIdentifier : groupKeys) {
+      headerAsString.add(groupIdentifier + " " + CsvConfiguration.TOTAL_IDENTIFIER);
+      headerAsString.add(groupIdentifier + " " + CsvConfiguration.NON_SEVERE_IDENTIFIER);
+      headerAsString.add(groupIdentifier + " " + CsvConfiguration.SEVERE_IDENTIFIER);
+      headerAsString.add(groupIdentifier + " " + CsvConfiguration.PRIORITY_DESCRIPTIONS[3]);
     }
 
     headerAsString.add(CsvConfiguration.ABSTENTIONS_IDENTIFIER);
@@ -59,8 +59,8 @@ public class UserJiraIssueBag implements CsvExportSupport {
     List<Object> metrics = new ArrayList<>();
     metrics.add(this.user.getName());
 
-    for (String periodIdentifier : periodKeys) {
-      JiraIssueBag periodBag = this.periodIssueBags.get(periodIdentifier);
+    for (T groupIdentifier : groupKeys) {
+      JiraIssueBag<T> periodBag = this.periodIssueBags.get(groupIdentifier);
 
       int issuesPerPeriod = periodBag.getNumberOfIssues();
       issuesPerPeriodFrequency.addValue(issuesPerPeriod);
