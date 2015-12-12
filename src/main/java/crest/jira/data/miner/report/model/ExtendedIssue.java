@@ -17,7 +17,7 @@ import java.util.List;
 public class ExtendedIssue {
 
   public static final String NO_PRIORITY_ID = "0";
-  public static final Version NO_RELEASE = new Version("NO RELEASE", new Date(0L));
+  public static final Version NO_RELEASE = new Version("0.0.0", new Date(0L));
   private static final long MILISECONDS_IN_A_DATE = 24 * 60 * 60 * 1000;
 
   private Issue issue;

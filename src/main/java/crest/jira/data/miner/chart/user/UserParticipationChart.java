@@ -21,7 +21,7 @@ import java.util.List;
 
 public class UserParticipationChart extends AbstractChart<String, Number> {
 
-  static final String INPUT_CSV_FILE = "Reporters_Board_2_1449866883707";
+  static final String INPUT_CSV_FILE = "Reporters_Board_2_1449954679787";
   private static final String CHART_TITLE = "Reporter participation";
   private static final int BIN_COUNT = 10;
 

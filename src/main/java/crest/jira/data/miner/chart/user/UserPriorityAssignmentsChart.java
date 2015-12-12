@@ -20,9 +20,10 @@ import java.util.Map;
 
 public class UserPriorityAssignmentsChart extends AbstractChart<Number, Number> {
 
+  private static final String BAG_IDENTIFIER_REGEX = "^(\\d+\\.)?(\\d+\\.)?(\\*|\\d+).*$";
   private static final String CHART_TITLE = "Priority assignments";
-  // private static final double MIN_PARTICIPATION = 10;
-  private static final double MIN_PARTICIPATION = Double.MIN_VALUE;
+  private static final double MIN_PARTICIPATION = 10;
+  // private static final double MIN_PARTICIPATION = Double.MIN_VALUE;
 
   public static void main(String... args) {
     launch(args);
@@ -69,10 +70,10 @@ public class UserPriorityAssignmentsChart extends AbstractChart<Number, Number> 
 
       for (String headerValue : getCsvHeaderMap(fileName).keySet()) {
 
-        if (headerValue.matches("\\d{4}-\\d{2}.*$")) {
+        if (headerValue.matches(BAG_IDENTIFIER_REGEX)) {
 
-          String period = headerValue.substring(0, 7);
-          String metric = headerValue.substring(8);
+          String period = headerValue.substring(0, 5);
+          String metric = headerValue.substring(6);
           String value = record.get(headerValue);
 
           if (periodInformation.get(period) == null) {
