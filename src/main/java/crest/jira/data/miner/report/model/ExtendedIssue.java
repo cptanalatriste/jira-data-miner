@@ -6,17 +6,26 @@ import crest.jira.data.retriever.model.Issue;
 import crest.jira.data.retriever.model.Priority;
 import crest.jira.data.retriever.model.Version;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
-public class ExtendedIssue {
+public class ExtendedIssue implements CsvExportSupport {
 
-  public static final String NO_PRIORITY_ID = "0";
+  private static final String DATE_PATTERN = "yyyy-MM-dd";
+
+  private static Logger logger = Logger.getLogger(ExtendedIssue.class.getName());
+
+  private static final int NO_VERSION_FOUND = -1;
+  public static final Priority NO_PRIORITY = new Priority("0", "No Priority");
   public static final Version NO_RELEASE = new Version("0.0.0", new Date(0L));
   private static final long MILISECONDS_IN_A_DATE = 24 * 60 * 60 * 1000;
 
@@ -81,8 +90,7 @@ public class ExtendedIssue {
 
   private void loadPriorityProperties() {
     List<TimedChangeLogItem> priorityChanges = new ArrayList<TimedChangeLogItem>();
-    Priority noPriority = new Priority();
-    noPriority.setId(NO_PRIORITY_ID);
+    Priority noPriority = NO_PRIORITY;
 
     this.doesPriorityChanged = false;
     this.originalPriority = noPriority;
@@ -159,6 +167,66 @@ public class ExtendedIssue {
     return NO_RELEASE;
   }
 
+  private Version getLatestFixVersion() {
+    Version latestFixVersion = null;
+
+    Version[] fixVersionsArray = issue.getFixVersions();
+    if (fixVersionsArray.length > 0) {
+      List<Version> fixVersions = new ArrayList<Version>(Arrays.asList(fixVersionsArray));
+      Collections.sort(fixVersions, new ReleaseDateComparator());
+
+      latestFixVersion = fixVersions.get(fixVersions.size() - 1);
+    }
+
+    return latestFixVersion;
+  }
+
+  private int getVersionIndex(Version version) {
+    for (int index = 0; index < this.projectVersions.size(); index += 1) {
+      Version currentVersion = this.projectVersions.get(index);
+
+      if (currentVersion.equals(version)) {
+        return index;
+      }
+    }
+
+    return NO_VERSION_FOUND;
+  }
+
+  /**
+   * Returns the number of releases needed to get a fix for this issue.
+   * 
+   * @return Number of releases, and -1 if no fix version was included.
+   */
+  public int getReleasesToBeFixed() {
+
+    Version closestRelease = this.getClosestRelease();
+    Version latestFixVersion = this.getLatestFixVersion();
+
+    if (latestFixVersion != null) {
+      int closestReleaseIndex = getVersionIndex(closestRelease);
+      int fixVersionIndex = getVersionIndex(latestFixVersion);
+
+      if (fixVersionIndex < closestReleaseIndex) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
+        Date latestReleaseDate = latestFixVersion.getReleaseDate();
+        String latestReleaseAsString = latestReleaseDate != null
+            ? dateFormat.format(latestReleaseDate) : "NO DATE";
+
+        logger.severe("On issue " + this.getIssue().getKey() + " (Reported "
+            + dateFormat.format(this.getIssue().getCreated()) + ") was fixed on Release "
+            + latestFixVersion.getName() + " (Index " + fixVersionIndex + " "
+            + latestReleaseAsString + " ). However, the closest release was "
+            + closestRelease.getName() + " (Index " + closestReleaseIndex + " "
+            + dateFormat.format(closestRelease.getReleaseDate()) + " )");
+      }
+
+      return fixVersionIndex - closestReleaseIndex;
+    }
+
+    return NO_VERSION_FOUND;
+  }
+
   /**
    * Stores the list of versions for the Project related to this issue, and
    * sorts it.
@@ -169,7 +237,57 @@ public class ExtendedIssue {
   public void setProjectVersions(List<Version> projectVersions) {
     this.projectVersions = projectVersions;
 
-    Collections.sort(this.projectVersions, new VersionComparator());
+    Collections.sort(this.projectVersions, new ReleaseDateComparator());
+  }
+
+  @Override
+  public String[] getCsvHeader() {
+    List<String> headerAsList = new ArrayList<String>();
+
+    headerAsList.add(CsvConfiguration.ISSUE_KEY);
+    headerAsList.add(CsvConfiguration.ISSUE_TYPE);
+    headerAsList.add(CsvConfiguration.ORIGINAL_PRIORITY);
+    headerAsList.add(CsvConfiguration.CURRENT_PRIORITY);
+    headerAsList.add(CsvConfiguration.CREATION_DATE);
+    headerAsList.add(CsvConfiguration.REPORTER);
+    headerAsList.add(CsvConfiguration.CLOSEST_RELEASE_NAME);
+    headerAsList.add(CsvConfiguration.CLOSEST_RELEASE_INDEX);
+    headerAsList.add(CsvConfiguration.CLOSEST_RELEASE_DATE);
+    headerAsList.add(CsvConfiguration.LATEST_FIX_NAME);
+    headerAsList.add(CsvConfiguration.LATEST_RELEASE_INDEX);
+    headerAsList.add(CsvConfiguration.LATEST_FIX_DATE);
+    headerAsList.add(CsvConfiguration.RELEASES_TO_FIX_SUFFIX);
+
+    return headerAsList.toArray(new String[headerAsList.size()]);
+  }
+
+  @Override
+  public List<Object> getCsvRecord() {
+    List<Object> recordAsList = new ArrayList<>();
+
+    recordAsList.add(this.issue.getKey());
+    recordAsList.add(this.issue.getIssueType().getId());
+    recordAsList.add(this.getOriginalPriority().getId());
+
+    Priority currentPriority = (Priority) ObjectUtils.defaultIfNull(this.issue.getPriority(),
+        NO_PRIORITY);
+    recordAsList.add(currentPriority.getId());
+    recordAsList.add(this.issue.getCreated());
+    recordAsList.add(this.issue.getReporter().getName());
+
+    Version closestRelease = this.getClosestRelease();
+    recordAsList.add(closestRelease.getName());
+    recordAsList.add(getVersionIndex(closestRelease));
+    recordAsList.add(closestRelease.getReleaseDate());
+
+    Version latestFixVersion = (Version) ObjectUtils.defaultIfNull(this.getLatestFixVersion(),
+        NO_RELEASE);
+    recordAsList.add(latestFixVersion.getName());
+    recordAsList.add(getVersionIndex(latestFixVersion));
+    recordAsList.add(latestFixVersion.getReleaseDate());
+
+    recordAsList.add(this.getReleasesToBeFixed());
+    return recordAsList;
   }
 
   @Override

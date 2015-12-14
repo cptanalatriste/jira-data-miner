@@ -38,20 +38,20 @@ public class UserJiraIssueBag<T> implements CsvExportSupport {
 
   @Override
   public String[] getCsvHeader() {
-    List<String> headerAsString = new ArrayList<String>();
-    headerAsString.add(CsvConfiguration.USER_IDENTIFIER);
+    List<String> headerAsList = new ArrayList<String>();
+    headerAsList.add(CsvConfiguration.USER_IDENTIFIER);
 
     for (T groupIdentifier : groupKeys) {
-      headerAsString.add(groupIdentifier + " " + CsvConfiguration.TOTAL_IDENTIFIER);
-      headerAsString.add(groupIdentifier + " " + CsvConfiguration.NON_SEVERE_IDENTIFIER);
-      headerAsString.add(groupIdentifier + " " + CsvConfiguration.SEVERE_IDENTIFIER);
-      headerAsString.add(groupIdentifier + " " + CsvConfiguration.PRIORITY_DESCRIPTIONS[3]);
+      headerAsList.add(groupIdentifier + " " + CsvConfiguration.TOTAL_IDENTIFIER);
+      headerAsList.add(groupIdentifier + " " + CsvConfiguration.NON_SEVERE_IDENTIFIER);
+      headerAsList.add(groupIdentifier + " " + CsvConfiguration.SEVERE_IDENTIFIER);
+      headerAsList.add(groupIdentifier + " " + CsvConfiguration.PRIORITY_DESCRIPTIONS[3]);
     }
 
-    headerAsString.add(CsvConfiguration.ABSTENTIONS_IDENTIFIER);
-    headerAsString.add(CsvConfiguration.PARTICIPATIONS_IDENTIFIER);
+    headerAsList.add(CsvConfiguration.ABSTENTIONS_IDENTIFIER);
+    headerAsList.add(CsvConfiguration.PARTICIPATIONS_IDENTIFIER);
 
-    return headerAsString.toArray(new String[headerAsString.size()]);
+    return headerAsList.toArray(new String[headerAsList.size()]);
   }
 
   @Override

@@ -15,6 +15,7 @@ public class CsvConfiguration {
   public static final String RESOLVED_SUFIX = " Resolved";
   public static final String RELATIVE_SUFIX = " (%)";
   public static final String FREQUENCIES_SUFIX = "";
+  public static final String RELEASES_TO_FIX_SUFFIX = " Releases to Fix";
 
   public static final String TIME_PERIOD_IDENTIFIER = "Period Identifier";
   public static final String NON_SEVERE_IDENTIFIER = "Non-Severe";
@@ -29,5 +30,18 @@ public class CsvConfiguration {
   public static final String USER_IDENTIFIER = "User";
   public static final String ABSTENTIONS_IDENTIFIER = "Abstentions";
   public static final String PARTICIPATIONS_IDENTIFIER = "Participations";
+
+  public static final String ISSUE_KEY = "Issue Key";
+  public static final String ISSUE_TYPE = "Issue Type";
+  public static final String CLOSEST_RELEASE_NAME = "Closest Release";
+  public static final String CLOSEST_RELEASE_INDEX = "Closest Release Index";
+  public static final String CLOSEST_RELEASE_DATE = "Closest Release Date";
+  public static final String CREATION_DATE = "Creation Date";
+  public static final String REPORTER = "Reporter";
+  public static final String LATEST_FIX_NAME = "Latest Fix Version";
+  public static final String LATEST_RELEASE_INDEX = "Latest Fix Version Index";
+  public static final String LATEST_FIX_DATE = "Latest Fix Version Date";
+  public static final String ORIGINAL_PRIORITY = "Original Priority";
+  public static final String CURRENT_PRIORITY = "Current Priority";
 
 }

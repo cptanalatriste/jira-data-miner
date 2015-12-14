@@ -27,7 +27,8 @@ public class JiraIssueBag<T> implements CsvExportSupport {
   private DescriptiveStatistics nonSevereResolutionTime = new DescriptiveStatistics();
 
   private int priorityChanges = 0;
-  private HashMap<String, DescriptiveStatistics> timePerPriorityCounter = new HashMap<>();
+  private HashMap<String, DescriptiveStatistics> timePerPriorityCounters = new HashMap<>();
+  private HashMap<String, DescriptiveStatistics> releasesPerPriorityCounters = new HashMap<>();
   private List<ExtendedIssue> originalIssues;
   private T identifier;
 
@@ -45,7 +46,8 @@ public class JiraIssueBag<T> implements CsvExportSupport {
   public JiraIssueBag(T identifier, List<ExtendedIssue> originalIssues) {
     this.identifier = identifier;
     this.originalIssues = originalIssues;
-    initializePriorityStatistics(timePerPriorityCounter);
+    initializePriorityStatistics(timePerPriorityCounters);
+    initializePriorityStatistics(releasesPerPriorityCounters);
     calculateMetrics();
   }
 
@@ -61,6 +63,7 @@ public class JiraIssueBag<T> implements CsvExportSupport {
         try {
           this.calculatePriorityMetrics(extendedIssue);
           this.calculateResolutionTimeMetrics(extendedIssue);
+          this.calculateReleaseRelatedMetrics(extendedIssue);
           this.calculateReporterMetrics(extendedIssue);
         } catch (Exception e) {
           logger.log(Level.SEVERE, "Error while processing issue: " + extendedIssue, e);
@@ -82,13 +85,20 @@ public class JiraIssueBag<T> implements CsvExportSupport {
     }
   }
 
+  private void calculateReleaseRelatedMetrics(ExtendedIssue extendedIssue) {
+    String originalPriorityId = extendedIssue.getOriginalPriority().getId();
+    DescriptiveStatistics counterPerPriority = releasesPerPriorityCounters.get(originalPriorityId);
+    int releasesToFix = extendedIssue.getReleasesToBeFixed();
+    counterPerPriority.addValue(releasesToFix);
+  }
+
   private void calculateResolutionTimeMetrics(ExtendedIssue extendedIssue) {
     String originalPriorityId = extendedIssue.getOriginalPriority().getId();
 
     if (extendedIssue.isResolved()) {
       resolvedFrequency.addValue(originalPriorityId);
 
-      DescriptiveStatistics counterPerPriority = timePerPriorityCounter.get(originalPriorityId);
+      DescriptiveStatistics counterPerPriority = timePerPriorityCounters.get(originalPriorityId);
       Double resolutionTime = extendedIssue.getResolutionTime();
       counterPerPriority.addValue(resolutionTime);
 
@@ -129,7 +139,7 @@ public class JiraIssueBag<T> implements CsvExportSupport {
       headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_AVG_SUFFIX);
       headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_MED_SUFFIX);
       headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_STD_SUFFIX);
-
+      headerAsString.add(priorityDescription + CsvConfiguration.RELEASES_TO_FIX_SUFFIX);
     }
 
     headerAsString.addAll(Arrays.asList(CsvConfiguration.TOTAL_IDENTIFIER,
@@ -152,50 +162,55 @@ public class JiraIssueBag<T> implements CsvExportSupport {
 
   @Override
   public List<Object> getCsvRecord() {
-    List<Object> metrics = new ArrayList<>();
+    List<Object> recordAsList = new ArrayList<>();
 
     Double numberOfIssues = new Double(getNumberOfIssues());
-
-    metrics.add(identifier.toString());
+    recordAsList.add(identifier.toString());
+    
     for (String priority : CsvConfiguration.PRIORITIES) {
-      metrics.add(priorityFrequency.getCount(priority));
-      metrics.add(getRelativeFrequencyByPriority(priority));
-      metrics.add(resolvedFrequency.getCount(priority));
-      metrics.add(resolvedFrequency.getPct(priority));
-      metrics.add(unresolvedFrequency.getCount(priority));
-      metrics.add(unresolvedFrequency.getPct(priority));
+      recordAsList.add(priorityFrequency.getCount(priority));
+      recordAsList.add(getRelativeFrequencyByPriority(priority));
+      recordAsList.add(resolvedFrequency.getCount(priority));
+      recordAsList.add(resolvedFrequency.getPct(priority));
+      recordAsList.add(unresolvedFrequency.getCount(priority));
+      recordAsList.add(unresolvedFrequency.getPct(priority));
 
-      DescriptiveStatistics timeDescriptiveStats = timePerPriorityCounter.get(priority);
+      DescriptiveStatistics timeDescriptiveStats = timePerPriorityCounters.get(priority);
 
-      metrics.add(timeDescriptiveStats.getMean());
-      metrics.add(timeDescriptiveStats.getPercentile(50));
-      metrics.add(timeDescriptiveStats.getStandardDeviation());
+      recordAsList.add(timeDescriptiveStats.getMean());
+      recordAsList.add(timeDescriptiveStats.getPercentile(50));
+      recordAsList.add(timeDescriptiveStats.getStandardDeviation());
+
+      DescriptiveStatistics releasesToFixStats = releasesPerPriorityCounters.get(priority);
+      recordAsList.add(releasesToFixStats.getPercentile(50));
     }
 
-    metrics.add(numberOfIssues.intValue());
-    metrics.add(generalResolutionTime.getPercentile(50));
+    recordAsList.add(numberOfIssues.intValue());
+    recordAsList.add(generalResolutionTime.getPercentile(50));
 
-    metrics.add(getNonSevereRelativeFrequency());
-    metrics.add(getSevereRelativeFrequency());
+    recordAsList.add(getNonSevereRelativeFrequency());
+    recordAsList.add(getSevereRelativeFrequency());
 
-    metrics.add(nonSevereResolutionTime.getPercentile(50));
-    metrics.add(severeResolutionTime.getPercentile(50));
+    recordAsList.add(nonSevereResolutionTime.getPercentile(50));
+    recordAsList.add(severeResolutionTime.getPercentile(50));
 
-    metrics.add(unresolvedFrequency.getPct("4") + unresolvedFrequency.getPct("5"));
-    metrics.add(unresolvedFrequency.getPct("1") + unresolvedFrequency.getPct("2"));
+    recordAsList.add(unresolvedFrequency.getPct("4") + unresolvedFrequency.getPct("5"));
+    recordAsList.add(unresolvedFrequency.getPct("1") + unresolvedFrequency.getPct("2"));
 
-    metrics.add(this.priorityChanges);
-    metrics.add(this.priorityChanges / numberOfIssues);
+    recordAsList.add(this.priorityChanges);
+    recordAsList.add(this.priorityChanges / numberOfIssues);
 
     int numberOfReporters = getNumberOfReporters();
-    metrics.add(numberOfReporters);
-    metrics.add(numberOfIssues / numberOfReporters);
+    recordAsList.add(numberOfReporters);
+    recordAsList.add(numberOfIssues / numberOfReporters);
 
-    metrics.add(changerFrequency.getUniqueCount());
+    recordAsList.add(changerFrequency.getUniqueCount());
 
-    metrics.add(reporterFrequency.getMode().isEmpty() ? null : reporterFrequency.getMode().get(0));
-    metrics.add(changerFrequency.getMode().isEmpty() ? null : changerFrequency.getMode().get(0));
-    return metrics;
+    recordAsList
+        .add(reporterFrequency.getMode().isEmpty() ? null : reporterFrequency.getMode().get(0));
+    recordAsList
+        .add(changerFrequency.getMode().isEmpty() ? null : changerFrequency.getMode().get(0));
+    return recordAsList;
   }
 
   public double getRelativeFrequencyByPriority(String priority) {

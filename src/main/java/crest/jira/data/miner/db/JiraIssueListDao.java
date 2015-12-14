@@ -230,4 +230,9 @@ public class JiraIssueListDao {
 
     return reportedDateAsCalendar.get(Calendar.YEAR) + "-" + monthAsString;
   }
+
+  public List<ExtendedIssue> getIssueList() {
+    return issueList;
+  }
+
 }
