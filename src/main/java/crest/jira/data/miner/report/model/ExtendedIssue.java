@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 public class ExtendedIssue implements CsvExportSupport {
@@ -24,9 +26,8 @@ public class ExtendedIssue implements CsvExportSupport {
 
   private static Logger logger = Logger.getLogger(ExtendedIssue.class.getName());
 
-  private static final int NO_VERSION_FOUND = -1;
   public static final Priority NO_PRIORITY = new Priority("0", "No Priority");
-  public static final Version NO_RELEASE = new Version("0.0.0", new Date(0L));
+  private static final Version NO_RELEASE = new Version("-1", "0.0.0", new Date(0L));
   private static final long MILISECONDS_IN_A_DATE = 24 * 60 * 60 * 1000;
 
   private Issue issue;
@@ -35,7 +36,7 @@ public class ExtendedIssue implements CsvExportSupport {
   private double resolutionTime = 0.0;
   private boolean isResolved = false;
 
-  private List<Version> projectVersions;
+  private Set<Version> projectVersions;
 
   /**
    * Calculates additional fields that are necessary for analysis.
@@ -168,7 +169,7 @@ public class ExtendedIssue implements CsvExportSupport {
   }
 
   private Version getLatestFixVersion() {
-    Version latestFixVersion = null;
+    Version latestFixVersion = NO_RELEASE;
 
     Version[] fixVersionsArray = issue.getFixVersions();
     if (fixVersionsArray.length > 0) {
@@ -181,16 +182,18 @@ public class ExtendedIssue implements CsvExportSupport {
     return latestFixVersion;
   }
 
-  private int getVersionIndex(Version version) {
-    for (int index = 0; index < this.projectVersions.size(); index += 1) {
-      Version currentVersion = this.projectVersions.get(index);
+  private Integer getVersionIndex(Version version) {
+    int index = 0;
 
+    for (Version currentVersion : this.projectVersions) {
       if (currentVersion.equals(version)) {
         return index;
       }
+
+      index += 1;
     }
 
-    return NO_VERSION_FOUND;
+    return null;
   }
 
   /**
@@ -198,12 +201,12 @@ public class ExtendedIssue implements CsvExportSupport {
    * 
    * @return Number of releases, and -1 if no fix version was included.
    */
-  public int getReleasesToBeFixed() {
+  public Integer getReleasesToBeFixed() {
 
     Version closestRelease = this.getClosestRelease();
     Version latestFixVersion = this.getLatestFixVersion();
 
-    if (latestFixVersion != null) {
+    if (!NO_RELEASE.equals(closestRelease) && !NO_RELEASE.equals(latestFixVersion)) {
       int closestReleaseIndex = getVersionIndex(closestRelease);
       int fixVersionIndex = getVersionIndex(latestFixVersion);
 
@@ -224,7 +227,7 @@ public class ExtendedIssue implements CsvExportSupport {
       return fixVersionIndex - closestReleaseIndex;
     }
 
-    return NO_VERSION_FOUND;
+    return null;
   }
 
   /**
@@ -235,9 +238,15 @@ public class ExtendedIssue implements CsvExportSupport {
    *          List of project versions.
    */
   public void setProjectVersions(List<Version> projectVersions) {
-    this.projectVersions = projectVersions;
 
-    Collections.sort(this.projectVersions, new ReleaseDateComparator());
+    // It is possible that the Versions associated to the issue are not
+    // retrieved from the Database query.
+    Set<Version> joinedSet = new TreeSet<>(new ReleaseDateComparator());
+    joinedSet.addAll(projectVersions);
+    joinedSet.addAll(Arrays.asList(issue.getVersions()));
+    joinedSet.addAll(Arrays.asList(issue.getFixVersions()));
+
+    this.projectVersions = joinedSet;
   }
 
   @Override
@@ -292,7 +301,7 @@ public class ExtendedIssue implements CsvExportSupport {
 
   @Override
   public String toString() {
-    return new ToStringBuilder(this).append("issueId", issue.getId())
+    return new ToStringBuilder(this).append("issueId", issue.getId()).append("key", issue.getKey())
         .append("boardId", issue.getBoardId()).append("priority", issue.getPriority()).toString();
   }
 

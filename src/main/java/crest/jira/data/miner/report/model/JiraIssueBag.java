@@ -88,8 +88,10 @@ public class JiraIssueBag<T> implements CsvExportSupport {
   private void calculateReleaseRelatedMetrics(ExtendedIssue extendedIssue) {
     String originalPriorityId = extendedIssue.getOriginalPriority().getId();
     DescriptiveStatistics counterPerPriority = releasesPerPriorityCounters.get(originalPriorityId);
-    int releasesToFix = extendedIssue.getReleasesToBeFixed();
-    counterPerPriority.addValue(releasesToFix);
+    Integer releasesToFix = extendedIssue.getReleasesToBeFixed();
+    if (releasesToFix != null) {
+      counterPerPriority.addValue(releasesToFix);
+    }
   }
 
   private void calculateResolutionTimeMetrics(ExtendedIssue extendedIssue) {
@@ -140,6 +142,8 @@ public class JiraIssueBag<T> implements CsvExportSupport {
       headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_MED_SUFFIX);
       headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_STD_SUFFIX);
       headerAsString.add(priorityDescription + CsvConfiguration.RELEASES_TO_FIX_SUFFIX);
+      headerAsString.add(priorityDescription + CsvConfiguration.RELEASES_TO_FIX_STD_SUFFIX);
+
     }
 
     headerAsString.addAll(Arrays.asList(CsvConfiguration.TOTAL_IDENTIFIER,
@@ -166,7 +170,7 @@ public class JiraIssueBag<T> implements CsvExportSupport {
 
     Double numberOfIssues = new Double(getNumberOfIssues());
     recordAsList.add(identifier.toString());
-    
+
     for (String priority : CsvConfiguration.PRIORITIES) {
       recordAsList.add(priorityFrequency.getCount(priority));
       recordAsList.add(getRelativeFrequencyByPriority(priority));
@@ -183,6 +187,8 @@ public class JiraIssueBag<T> implements CsvExportSupport {
 
       DescriptiveStatistics releasesToFixStats = releasesPerPriorityCounters.get(priority);
       recordAsList.add(releasesToFixStats.getPercentile(50));
+      recordAsList.add(releasesToFixStats.getStandardDeviation());
+
     }
 
     recordAsList.add(numberOfIssues.intValue());

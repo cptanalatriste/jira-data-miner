@@ -15,7 +15,9 @@ public class CsvConfiguration {
   public static final String RESOLVED_SUFIX = " Resolved";
   public static final String RELATIVE_SUFIX = " (%)";
   public static final String FREQUENCIES_SUFIX = "";
-  public static final String RELEASES_TO_FIX_SUFFIX = " Releases to Fix";
+  public static final String RELEASES_TO_FIX_SUFFIX = " Releases to Fix (med)";
+  public static final String RELEASES_TO_FIX_STD_SUFFIX = " Releases to Fix (std)";
+
 
   public static final String TIME_PERIOD_IDENTIFIER = "Period Identifier";
   public static final String NON_SEVERE_IDENTIFIER = "Non-Severe";
