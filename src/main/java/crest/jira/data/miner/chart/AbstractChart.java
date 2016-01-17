@@ -12,9 +12,13 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
 
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.math3.random.EmpiricalDistribution;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,10 +28,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
 public abstract class AbstractChart<X, Y> extends Application {
+
+  private static Logger logger = Logger.getLogger(AbstractChart.class.getName());
 
   public static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
   private static final String FILE_NAME = "Board_2_1449945441021";
@@ -161,6 +168,59 @@ public abstract class AbstractChart<X, Y> extends Application {
     WritableImage writableImage = chart.snapshot(new SnapshotParameters(), null);
     File file = new File(DIRECTORY + chartTitle + PNG_EXTENSION);
     ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
+  }
+
+  /**
+   * Return chart series for a bin-based histogram.
+   * 
+   * @param fileName
+   *          Input file.
+   * @param valueIdentifier
+   *          Column with the data.
+   * @return Series for the histogram.
+   */
+  public List<Series<String, Number>> getSeriesForHistogram(String fileName, String valueIdentifier,
+      int binCount, Predicate<CSVRecord> isValid) {
+
+    EmpiricalDistribution empiricalDistributon = new EmpiricalDistribution(binCount);
+    List<Double> dataPoints = new ArrayList<>();
+
+    List<CSVRecord> records = getCsvRecords(fileName);
+
+    for (int index = 0; index < records.size(); index += 1) {
+      CSVRecord csvRecord = records.get(index);
+
+      if (isValid == null || isValid.evaluate(csvRecord)) {
+        Double dataPoint = Double.parseDouble(csvRecord.get(valueIdentifier));
+        dataPoints.add(dataPoint);
+      }
+    }
+
+    logger.info("dataPoints.size() " + dataPoints.size());
+
+    empiricalDistributon
+        .load(ArrayUtils.toPrimitive(dataPoints.toArray(new Double[dataPoints.size()])));
+    Series<String, Number> histogramSeries = new Series<String, Number>();
+    histogramSeries.setName(valueIdentifier);
+
+    List<SummaryStatistics> binStats = empiricalDistributon.getBinStats();
+    double[] upperBounds = empiricalDistributon.getUpperBounds();
+
+    for (int index = 0; index < binStats.size(); index += 1) {
+      SummaryStatistics binStatistics = binStats.get(index);
+
+      long frequency = binStatistics.getN();
+      double lowerBound = index > 0 ? upperBounds[index - 1] : binStatistics.getMin();
+      String binLabel = String.format("%.2f", lowerBound) + " - "
+          + String.format("%.2f", upperBounds[index]);
+
+      Data<String, Number> data = new Data<>(binLabel, frequency);
+      histogramSeries.getData().add(data);
+    }
+
+    List<Series<String, Number>> seriesAsList = new ArrayList<>();
+    seriesAsList.add(histogramSeries);
+    return seriesAsList;
   }
 
   /**

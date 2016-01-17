@@ -15,6 +15,7 @@ public class CsvConfiguration {
   public static final String RESOLVED_SUFIX = " Resolved";
   public static final String RELATIVE_SUFIX = " (%)";
   public static final String FREQUENCIES_SUFIX = "";
+  //TODO(cgavidia): Change this later.
   public static final String RELEASES_TO_FIX_SUFFIX = " Releases to Fix (med)";
   public static final String RELEASES_TO_FIX_STD_SUFFIX = " Releases to Fix (std)";
 
