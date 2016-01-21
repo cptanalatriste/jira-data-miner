@@ -36,7 +36,7 @@ public class RelativePriorityChanges extends AbstractChart<String, Number> {
   @Override
   public XYChart<String, Number> getChart() {
     CategoryAxis periodAxis = new CategoryAxis();
-    periodAxis.setLabel(TIME_PERIOD_LABEL);
+    periodAxis.setLabel(PERIOD);
 
     NumberAxis counterAxis = new NumberAxis();
     counterAxis.setLabel(RELATIVE_FREQUENCY_LABEL);

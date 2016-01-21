@@ -40,7 +40,7 @@ public class UserParticipationChart extends AbstractChart<String, Number> {
         return !dataPoint.isNaN();
       }
     };
-    List<Series<String, Number>> chartSeries = getSeriesForHistogram(getCsvFileLocation(),
+    List<Series<String, Number>> chartSeries = getSeriesForHistogramUsingBins(getCsvFileLocation(),
         valueIdentifier, BIN_COUNT, notNanPredicate);
     showAndSaveChart(CHART_TITLE, stage, chartSeries);
   }
@@ -51,7 +51,7 @@ public class UserParticipationChart extends AbstractChart<String, Number> {
     rangeAxis.setLabel(RANGE_LABEL);
 
     NumberAxis counterAxis = new NumberAxis();
-    counterAxis.setLabel(FREQUENCY_LABEL);
+    counterAxis.setLabel(COUNT_LABEL);
 
     BarChart<String, Number> barChart = new BarChart<>(rangeAxis, counterAxis);
     return barChart;

@@ -38,10 +38,10 @@ public class IssuesAndReportersChart extends AbstractChart<String, Number> {
   @Override
   public XYChart<String, Number> getChart() {
     CategoryAxis periodAxis = new CategoryAxis();
-    periodAxis.setLabel(TIME_PERIOD_LABEL);
+    periodAxis.setLabel(PERIOD);
 
     NumberAxis counterAxis = new NumberAxis();
-    counterAxis.setLabel(FREQUENCY_LABEL);
+    counterAxis.setLabel(COUNT_LABEL);
 
     LineChart<String, Number> lineChart = new LineChart<String, Number>(periodAxis, counterAxis);
     return lineChart;

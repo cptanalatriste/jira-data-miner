@@ -37,13 +37,14 @@ public abstract class AbstractChart<X, Y> extends Application {
   private static Logger logger = Logger.getLogger(AbstractChart.class.getName());
 
   public static final String DIRECTORY = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  private static final String FILE_NAME = "Board_2_1449945441021";
+
+  private static final String FILE_NAME = "Board_2_1450137002550";
   public static final String CSV_EXTENSION = ".csv";
   private static final String PNG_EXTENSION = ".png";
 
-  public static final String TIME_PERIOD_LABEL = "Time Period";
+  public static final String PERIOD = "Period";
   public static final String BOARD_LABEL = "Board";
-  public static final String FREQUENCY_LABEL = "Frequency";
+  public static final String COUNT_LABEL = "Count";
   public static final String TIME_LABEL = "Time in Days";
   public static final String RANGE_LABEL = "Range";
   public static final String RELATIVE_FREQUENCY_LABEL = "Relative Frequency";
@@ -179,8 +180,8 @@ public abstract class AbstractChart<X, Y> extends Application {
    *          Column with the data.
    * @return Series for the histogram.
    */
-  public List<Series<String, Number>> getSeriesForHistogram(String fileName, String valueIdentifier,
-      int binCount, Predicate<CSVRecord> isValid) {
+  public List<Series<String, Number>> getSeriesForHistogramUsingBins(String fileName,
+      String valueIdentifier, int binCount, Predicate<CSVRecord> isValid) {
 
     EmpiricalDistribution empiricalDistributon = new EmpiricalDistribution(binCount);
     List<Double> dataPoints = new ArrayList<>();
