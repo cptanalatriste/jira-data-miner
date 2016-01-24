@@ -5,8 +5,9 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
 
 import crest.jira.data.miner.config.ConfigurationProvider;
+import crest.jira.data.miner.csv.BaseCsvGenerator;
+import crest.jira.data.miner.csv.CsvExportSupport;
 import crest.jira.data.miner.db.JiraIssueListDao;
-import crest.jira.data.miner.report.model.CsvExportSupport;
 import crest.jira.data.miner.report.model.ExtendedIssue;
 import crest.jira.data.miner.report.model.JiraIssueBag;
 import crest.jira.data.miner.report.model.ReleaseDateComparator;
@@ -16,7 +17,7 @@ import crest.jira.data.retriever.model.Board;
 import crest.jira.data.retriever.model.User;
 import crest.jira.data.retriever.model.Version;
 
-import org.apache.commons.collections4.map.MultiValueMap;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -31,13 +32,16 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-public class GenerateConsolidatedCsvFiles {
+public class GenerateConsolidatedCsvFiles extends BaseCsvGenerator {
 
   private static final String ALLBOARDS_KEY = "ALLBOARDS";
-  private static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
-  private static final String NEW_LINE_SEPARATOR = "\n";
+  public static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
 
   private static Dao<Board, String> boardDao;
+
+  public GenerateConsolidatedCsvFiles() {
+    super(FOLDER_NAME);
+  }
 
   /**
    * Analyzes the Testers moves per time frame. *
@@ -56,23 +60,25 @@ public class GenerateConsolidatedCsvFiles {
     ConfigurationProvider configProvider = new ConfigurationProvider();
     ConnectionSource connectionSource = configProvider.getConnectionSource();
 
-    processAllBoards(connectionSource);
+    GenerateConsolidatedCsvFiles generator = new GenerateConsolidatedCsvFiles();
 
-    boardDao = DaoManager.createDao(connectionSource, Board.class);
-    List<Board> allBoards = boardDao.queryForAll();
-    for (Board board : allBoards) {
-      processBoard(connectionSource, board.getId(), true);
-    }
+    generator.processAllBoards(connectionSource);
 
-    // processBoard(connectionSource, "2", true);
+    // boardDao = DaoManager.createDao(connectionSource, Board.class);
+    // List<Board> allBoards = boardDao.queryForAll();
+    // for (Board board : allBoards) {
+    // generator.processBoard(connectionSource, board.getId(), true);
+    // }
+
+    generator.processBoard(connectionSource, "2", true);
   }
 
-  private static void processAllBoards(ConnectionSource connectionSource)
+  private void processAllBoards(ConnectionSource connectionSource)
       throws SQLException, IOException {
     JiraIssueListDao analyser = new JiraIssueListDao(connectionSource);
     analyser.loadAllBugs();
 
-    MultiValueMap<String, ExtendedIssue> issuesPerBoard = analyser.organizeInBoards();
+    MultiValuedMap<String, ExtendedIssue> issuesPerBoard = analyser.organizeInBoards();
     List<JiraIssueBag<String>> issueBags = getBagsPerTimePeriod(issuesPerBoard,
         new Comparator<String>() {
           @Override
@@ -84,13 +90,13 @@ public class GenerateConsolidatedCsvFiles {
     generateCsvFile(ALLBOARDS_KEY, issueBags);
   }
 
-  private static void processBoard(ConnectionSource connectionSource, String boardId,
-      boolean onlyBugs) throws SQLException, IOException {
+  private void processBoard(ConnectionSource connectionSource, String boardId, boolean onlyBugs)
+      throws SQLException, IOException {
     JiraIssueListDao issueListDao = new JiraIssueListDao(connectionSource);
     issueListDao.loadBoardIssues(boardId, onlyBugs);
     generateCsvFile("Issues_for_Board_" + boardId, issueListDao.getIssueList());
 
-    MultiValueMap<Version, ExtendedIssue> issuesInGroups = issueListDao.organizeInReleases();
+    MultiValuedMap<Version, ExtendedIssue> issuesInGroups = issueListDao.organizeInReleases();
     List<JiraIssueBag<Version>> issueBags = getBagsPerTimePeriod(issuesInGroups,
         new ReleaseDateComparator());
 
@@ -124,9 +130,8 @@ public class GenerateConsolidatedCsvFiles {
     return userIssueBags;
   }
 
-  @SuppressWarnings("unchecked")
   private static <T> List<JiraIssueBag<T>> getBagsPerTimePeriod(
-      MultiValueMap<T, ExtendedIssue> issuesPerKey, Comparator<T> comparator) throws IOException {
+      MultiValuedMap<T, ExtendedIssue> issuesPerKey, Comparator<T> comparator) throws IOException {
 
     List<JiraIssueBag<T>> issueBags = new ArrayList<>();
 
@@ -142,33 +147,6 @@ public class GenerateConsolidatedCsvFiles {
     }
 
     return issueBags;
-  }
-
-  private static void generateCsvFile(String filePrefix, List<? extends CsvExportSupport> rows)
-      throws IOException {
-
-    if (rows.size() < 1) {
-      throw new RuntimeException(
-          "No rows sent while trying to create file with prefix " + filePrefix);
-    }
-
-    CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator(NEW_LINE_SEPARATOR);
-    BufferedWriter bufferedWriter = new BufferedWriter(
-        new FileWriter(FOLDER_NAME + filePrefix + "_" + new Date().getTime() + ".csv"));
-
-    try (CSVPrinter csvPrinter = new CSVPrinter(bufferedWriter, csvFileFormat)) {
-
-      csvPrinter.printRecord(Arrays.copyOf(rows.get(0).getCsvHeader(),
-          rows.get(0).getCsvHeader().length, Object[].class));
-
-      for (CsvExportSupport row : rows) {
-        csvPrinter.printRecord(row.getCsvRecord());
-      }
-
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
-
   }
 
 }

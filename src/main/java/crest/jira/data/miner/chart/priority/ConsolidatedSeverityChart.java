@@ -1,7 +1,7 @@
 package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.chart.AbstractChart;
-import crest.jira.data.miner.report.model.CsvConfiguration;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -27,10 +27,10 @@ public class ConsolidatedSeverityChart extends AbstractChart<String, Number> {
   private void buildChart(Stage stage) throws IOException {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        CsvConfiguration.TIME_PERIOD_IDENTIFIER,
-        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
-        CsvConfiguration.PRIORITY_DESCRIPTIONS[3] + CsvConfiguration.RELATIVE_SUFIX,
-        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX);
+        JiraCsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        JiraCsvConfiguration.NON_SEVERE_IDENTIFIER + JiraCsvConfiguration.RELATIVE_SUFIX,
+        JiraCsvConfiguration.PRIORITY_DESCRIPTIONS[3] + JiraCsvConfiguration.RELATIVE_SUFIX,
+        JiraCsvConfiguration.SEVERE_IDENTIFIER + JiraCsvConfiguration.RELATIVE_SUFIX);
 
     showAndSaveChart("Consolidated Severity", stage, chartSeries);
   }

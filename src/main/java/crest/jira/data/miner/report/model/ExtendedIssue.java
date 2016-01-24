@@ -1,5 +1,7 @@
 package crest.jira.data.miner.report.model;
 
+import crest.jira.data.miner.csv.CsvExportSupport;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 import crest.jira.data.retriever.model.ChangeLogItem;
 import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
@@ -52,12 +54,37 @@ public class ExtendedIssue implements CsvExportSupport {
   }
 
   /**
+   * Identifies an issue as a possible priority inflation.
+   * 
+   * @return True if it is highly possible an inflation, false if it is not.
+   */
+  public boolean isProbablyAnInflation() {
+    // TODO(cgavidia): This rule needs to be improved!
+    int maximumReleasesForSevere = 0;
+    return this.isSevere() && (this.getReleasesToBeFixed() != null
+        && this.getReleasesToBeFixed() > maximumReleasesForSevere);
+  }
+
+  /**
    * Indicate if this a severe issue.
    * 
    * @return True if it is severe, false if it is not.
    */
   public boolean isSevere() {
     if ("1".equals(originalPriority.getId()) || "2".equals(originalPriority.getId())) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Indicates if this issue has the Default priority assgined.
+   * 
+   * @return True if it is a default, false if it is not.
+   */
+  public boolean isDefault() {
+    if ("3".equals(originalPriority.getId())) {
       return true;
     }
 
@@ -253,19 +280,19 @@ public class ExtendedIssue implements CsvExportSupport {
   public String[] getCsvHeader() {
     List<String> headerAsList = new ArrayList<String>();
 
-    headerAsList.add(CsvConfiguration.ISSUE_KEY);
-    headerAsList.add(CsvConfiguration.ISSUE_TYPE);
-    headerAsList.add(CsvConfiguration.ORIGINAL_PRIORITY);
-    headerAsList.add(CsvConfiguration.CURRENT_PRIORITY);
-    headerAsList.add(CsvConfiguration.CREATION_DATE);
-    headerAsList.add(CsvConfiguration.REPORTER);
-    headerAsList.add(CsvConfiguration.CLOSEST_RELEASE_NAME);
-    headerAsList.add(CsvConfiguration.CLOSEST_RELEASE_INDEX);
-    headerAsList.add(CsvConfiguration.CLOSEST_RELEASE_DATE);
-    headerAsList.add(CsvConfiguration.LATEST_FIX_NAME);
-    headerAsList.add(CsvConfiguration.LATEST_RELEASE_INDEX);
-    headerAsList.add(CsvConfiguration.LATEST_FIX_DATE);
-    headerAsList.add(CsvConfiguration.RELEASES_TO_FIX_SUFFIX);
+    headerAsList.add(JiraCsvConfiguration.ISSUE_KEY);
+    headerAsList.add(JiraCsvConfiguration.ISSUE_TYPE);
+    headerAsList.add(JiraCsvConfiguration.ORIGINAL_PRIORITY);
+    headerAsList.add(JiraCsvConfiguration.CURRENT_PRIORITY);
+    headerAsList.add(JiraCsvConfiguration.CREATION_DATE);
+    headerAsList.add(JiraCsvConfiguration.REPORTER);
+    headerAsList.add(JiraCsvConfiguration.CLOSEST_RELEASE_NAME);
+    headerAsList.add(JiraCsvConfiguration.CLOSEST_RELEASE_INDEX);
+    headerAsList.add(JiraCsvConfiguration.CLOSEST_RELEASE_DATE);
+    headerAsList.add(JiraCsvConfiguration.LATEST_FIX_NAME);
+    headerAsList.add(JiraCsvConfiguration.LATEST_RELEASE_INDEX);
+    headerAsList.add(JiraCsvConfiguration.LATEST_FIX_DATE);
+    headerAsList.add(JiraCsvConfiguration.RELEASES_TO_FIX_SUFFIX);
 
     return headerAsList.toArray(new String[headerAsList.size()]);
   }

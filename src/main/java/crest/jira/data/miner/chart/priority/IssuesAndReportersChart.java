@@ -1,7 +1,7 @@
 package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.chart.AbstractChart;
-import crest.jira.data.miner.report.model.CsvConfiguration;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -28,9 +28,9 @@ public class IssuesAndReportersChart extends AbstractChart<String, Number> {
   private void buildChart(Stage stage) throws FileNotFoundException, IOException {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        CsvConfiguration.TIME_PERIOD_IDENTIFIER, CsvConfiguration.TOTAL_IDENTIFIER,
-        CsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
-        CsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER);
+        JiraCsvConfiguration.TIME_PERIOD_IDENTIFIER, JiraCsvConfiguration.TOTAL_IDENTIFIER,
+        JiraCsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
+        JiraCsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER);
 
     showAndSaveChart("Issues and Reporters", stage, chartSeries);
   }

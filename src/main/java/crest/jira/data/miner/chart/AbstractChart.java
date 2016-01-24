@@ -1,7 +1,5 @@
 package crest.jira.data.miner.chart;
 
-import crest.jira.data.miner.report.model.CsvConfiguration;
-
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -18,6 +16,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.random.EmpiricalDistribution;
+import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import java.io.BufferedReader;
@@ -26,9 +25,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
+
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javax.imageio.ImageIO;
 
@@ -225,6 +228,42 @@ public abstract class AbstractChart<X, Y> extends Application {
   }
 
   /**
+   * Return chart series for a simple histogram.
+   * 
+   * @param fileName
+   *          Input file.
+   * @param valueIdentifier
+   *          Column with the data.
+   * @return Series for the histogram.
+   */
+  public List<Series<String, Number>> getSeriesForHistogram(String fileName, String valueIdentifier,
+      int binCount, Predicate<CSVRecord> isValid) {
+    Frequency frequency = new Frequency();
+
+    List<CSVRecord> records = getCsvRecords(fileName);
+
+    for (int index = 0; index < records.size(); index += 1) {
+      CSVRecord csvRecord = records.get(index);
+
+      if (isValid == null || isValid.evaluate(csvRecord)) {
+        Long dataPoint = Long.parseLong(csvRecord.get(valueIdentifier));
+        frequency.addValue(dataPoint);
+      }
+    }
+    Series<String, Number> histogramSeries = new Series<String, Number>();
+    Iterator<Comparable<?>> iterator = frequency.valuesIterator();
+    while (iterator.hasNext()) {
+      Long value = (Long) iterator.next();
+      Data<String, Number> data = new Data<>(value + "", frequency.getCount(value));
+      histogramSeries.getData().add(data);
+    }
+
+    List<Series<String, Number>> seriesAsList = new ArrayList<>();
+    seriesAsList.add(histogramSeries);
+    return seriesAsList;
+  }
+
+  /**
    * Return a list of Priority-Related CSV keys.
    * 
    * @param suffix
@@ -234,8 +273,8 @@ public abstract class AbstractChart<X, Y> extends Application {
   public static String[] getPriorityLabelsBySuffix(String suffix) {
     List<String> labels = new ArrayList<>();
 
-    for (String priority : CsvConfiguration.PRIORITIES) {
-      labels.add(CsvConfiguration.PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)] + suffix);
+    for (String priority : JiraCsvConfiguration.PRIORITIES) {
+      labels.add(JiraCsvConfiguration.PRIORITY_DESCRIPTIONS[Integer.parseInt(priority)] + suffix);
     }
 
     return labels.toArray(new String[labels.size()]);

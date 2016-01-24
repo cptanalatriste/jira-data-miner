@@ -1,7 +1,7 @@
 package crest.jira.data.miner.chart.user;
 
 import crest.jira.data.miner.chart.AbstractChart;
-import crest.jira.data.miner.report.model.CsvConfiguration;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
@@ -42,7 +42,7 @@ public class UserPriorityAssignmentsChart extends AbstractChart<Number, Number> 
   private void buildChart(Stage stage) throws IOException {
 
     List<Series<Number, Number>> chartSeries = getSeriesForScatterPlot(getCsvFileLocation(),
-        CsvConfiguration.NON_SEVERE_IDENTIFIER, CsvConfiguration.SEVERE_IDENTIFIER);
+        JiraCsvConfiguration.NON_SEVERE_IDENTIFIER, JiraCsvConfiguration.SEVERE_IDENTIFIER);
     showAndSaveChart(CHART_TITLE, stage, chartSeries);
 
   }
@@ -55,9 +55,9 @@ public class UserPriorityAssignmentsChart extends AbstractChart<Number, Number> 
 
     for (int index = 0; index < records.size(); index += 1) {
       CSVRecord record = records.get(index);
-      String reporterName = record.get(CsvConfiguration.USER_IDENTIFIER);
+      String reporterName = record.get(JiraCsvConfiguration.USER_IDENTIFIER);
       double participation = Double
-          .parseDouble(record.get(CsvConfiguration.PARTICIPATIONS_IDENTIFIER));
+          .parseDouble(record.get(JiraCsvConfiguration.PARTICIPATIONS_IDENTIFIER));
 
       if (participation < MIN_PARTICIPATION) {
         continue;
@@ -83,9 +83,9 @@ public class UserPriorityAssignmentsChart extends AbstractChart<Number, Number> 
           double valueAsDouble = Double.isNaN(Double.parseDouble(value)) ? 0.0
               : Double.parseDouble(value);
 
-          if (CsvConfiguration.NON_SEVERE_IDENTIFIER.equals(metric)) {
+          if (JiraCsvConfiguration.NON_SEVERE_IDENTIFIER.equals(metric)) {
             periodInformation.get(period).setXValue(valueAsDouble);
-          } else if (CsvConfiguration.SEVERE_IDENTIFIER.equals(metric)) {
+          } else if (JiraCsvConfiguration.SEVERE_IDENTIFIER.equals(metric)) {
             periodInformation.get(period).setYValue(valueAsDouble);
           }
         }

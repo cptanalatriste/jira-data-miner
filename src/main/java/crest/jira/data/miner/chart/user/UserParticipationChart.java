@@ -1,7 +1,7 @@
 package crest.jira.data.miner.chart.user;
 
 import crest.jira.data.miner.chart.AbstractChart;
-import crest.jira.data.miner.report.model.CsvConfiguration;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -32,7 +32,7 @@ public class UserParticipationChart extends AbstractChart<String, Number> {
   }
 
   private void buildChart(Stage stage) throws IOException {
-    String valueIdentifier = CsvConfiguration.PARTICIPATIONS_IDENTIFIER;
+    String valueIdentifier = JiraCsvConfiguration.PARTICIPATIONS_IDENTIFIER;
     Predicate<CSVRecord> notNanPredicate = new Predicate<CSVRecord>() {
       @Override
       public boolean evaluate(CSVRecord csvRecord) {

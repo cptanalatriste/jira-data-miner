@@ -1,4 +1,4 @@
-package crest.jira.data.miner.report.model;
+package crest.jira.data.miner.csv;
 
 import java.util.List;
 

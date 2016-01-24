@@ -1,6 +1,6 @@
-package crest.jira.data.miner.report.model;
+package crest.jira.data.miner.csv;
 
-public class CsvConfiguration {
+public class JiraCsvConfiguration {
 
   public static final String[] PRIORITIES = new String[] { "0", "1", "2", "3", "4", "5" };
   public static final String[] PRIORITY_DESCRIPTIONS = new String[] { "No Priority", "Blocker",
@@ -15,10 +15,9 @@ public class CsvConfiguration {
   public static final String RESOLVED_SUFIX = " Resolved";
   public static final String RELATIVE_SUFIX = " (%)";
   public static final String FREQUENCIES_SUFIX = "";
-  //TODO(cgavidia): Change this later.
+  // TODO(cgavidia): Change this later.
   public static final String RELEASES_TO_FIX_SUFFIX = " Releases to Fix (med)";
   public static final String RELEASES_TO_FIX_STD_SUFFIX = " Releases to Fix (std)";
-
 
   public static final String TIME_PERIOD_IDENTIFIER = "Period Identifier";
   public static final String NON_SEVERE_IDENTIFIER = "Non-Severe";

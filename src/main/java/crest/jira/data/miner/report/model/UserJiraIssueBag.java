@@ -1,5 +1,7 @@
 package crest.jira.data.miner.report.model;
 
+import crest.jira.data.miner.csv.CsvExportSupport;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 import crest.jira.data.retriever.model.User;
 
 import org.apache.commons.math3.stat.Frequency;
@@ -39,17 +41,17 @@ public class UserJiraIssueBag<T> implements CsvExportSupport {
   @Override
   public String[] getCsvHeader() {
     List<String> headerAsList = new ArrayList<String>();
-    headerAsList.add(CsvConfiguration.USER_IDENTIFIER);
+    headerAsList.add(JiraCsvConfiguration.USER_IDENTIFIER);
 
     for (T groupIdentifier : groupKeys) {
-      headerAsList.add(groupIdentifier + " " + CsvConfiguration.TOTAL_IDENTIFIER);
-      headerAsList.add(groupIdentifier + " " + CsvConfiguration.NON_SEVERE_IDENTIFIER);
-      headerAsList.add(groupIdentifier + " " + CsvConfiguration.SEVERE_IDENTIFIER);
-      headerAsList.add(groupIdentifier + " " + CsvConfiguration.PRIORITY_DESCRIPTIONS[3]);
+      headerAsList.add(groupIdentifier + " " + JiraCsvConfiguration.TOTAL_IDENTIFIER);
+      headerAsList.add(groupIdentifier + " " + JiraCsvConfiguration.NON_SEVERE_IDENTIFIER);
+      headerAsList.add(groupIdentifier + " " + JiraCsvConfiguration.SEVERE_IDENTIFIER);
+      headerAsList.add(groupIdentifier + " " + JiraCsvConfiguration.PRIORITY_DESCRIPTIONS[3]);
     }
 
-    headerAsList.add(CsvConfiguration.ABSTENTIONS_IDENTIFIER);
-    headerAsList.add(CsvConfiguration.PARTICIPATIONS_IDENTIFIER);
+    headerAsList.add(JiraCsvConfiguration.ABSTENTIONS_IDENTIFIER);
+    headerAsList.add(JiraCsvConfiguration.PARTICIPATIONS_IDENTIFIER);
 
     return headerAsList.toArray(new String[headerAsList.size()]);
   }

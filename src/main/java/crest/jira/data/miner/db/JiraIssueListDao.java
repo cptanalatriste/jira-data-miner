@@ -17,7 +17,8 @@ import crest.jira.data.retriever.model.User;
 import crest.jira.data.retriever.model.Version;
 import crest.jira.data.retriever.model.VersionPerIssue;
 
-import org.apache.commons.collections4.map.MultiValueMap;
+import org.apache.commons.collections4.MultiMapUtils;
+import org.apache.commons.collections4.MultiValuedMap;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -26,9 +27,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class JiraIssueListDao {
 
+  private static Logger logger = Logger.getLogger(JiraIssueListDao.class.getName());
   private static final String BOARD_KEY_PREFFIX = "BOARD-";
   private static final String BUG_ISSUE_TYPE = "1";
 
@@ -154,8 +157,8 @@ public class JiraIssueListDao {
    * 
    * @return Map of per-board lists of issues.
    */
-  public MultiValueMap<String, ExtendedIssue> organizeInBoards() {
-    MultiValueMap<String, ExtendedIssue> issuesPerBoard = new MultiValueMap<>();
+  public MultiValuedMap<String, ExtendedIssue> organizeInBoards() {
+    MultiValuedMap<String, ExtendedIssue> issuesPerBoard = MultiMapUtils.newListValuedHashMap();
     for (ExtendedIssue extendedIssue : issueList) {
       String boardKey = extendedIssue.getIssue().getBoardId();
       if (boardKey.length() == 1) {
@@ -173,8 +176,8 @@ public class JiraIssueListDao {
    * 
    * @return MultiValueMap, containing the buckets.
    */
-  public MultiValueMap<Version, ExtendedIssue> organizeInReleases() {
-    MultiValueMap<Version, ExtendedIssue> issuesPerRelease = new MultiValueMap<>();
+  public MultiValuedMap<Version, ExtendedIssue> organizeInReleases() {
+    MultiValuedMap<Version, ExtendedIssue> issuesPerRelease = MultiMapUtils.newListValuedHashMap();
 
     for (ExtendedIssue extendedIssue : issueList) {
       Version closestRelease = extendedIssue.getClosestRelease();
@@ -195,7 +198,12 @@ public class JiraIssueListDao {
     for (ExtendedIssue extendedIssue : issueList) {
 
       if (boardId.equals(extendedIssue.getIssue().getBoardId())) {
-        reporterCatalog.add(extendedIssue.getIssue().getReporter());
+        boolean isAdded = reporterCatalog.add(extendedIssue.getIssue().getReporter());
+
+        if (!isAdded) {
+          logger.finest(
+              "User " + extendedIssue.getIssue().getReporter().getName() + " is already there ");
+        }
       }
     }
 
@@ -207,8 +215,8 @@ public class JiraIssueListDao {
    * 
    * @return A MultiValueMap, where the frame identified is the key.
    */
-  public MultiValueMap<String, ExtendedIssue> organizeInTimeFrames() {
-    MultiValueMap<String, ExtendedIssue> issuesPerTimeFrame = new MultiValueMap<>();
+  public MultiValuedMap<String, ExtendedIssue> organizeInTimeFrames() {
+    MultiValuedMap<String, ExtendedIssue> issuesPerTimeFrame = MultiMapUtils.newListValuedHashMap();
 
     for (ExtendedIssue issue : issueList) {
       String timeFrameKey = getTimeFrameKey(issue);

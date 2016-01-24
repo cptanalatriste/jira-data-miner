@@ -1,7 +1,7 @@
 package crest.jira.data.miner.chart.priority;
 
 import crest.jira.data.miner.chart.AbstractChart;
-import crest.jira.data.miner.report.model.CsvConfiguration;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -29,8 +29,8 @@ public class PriorityFrequenciesChart extends AbstractChart<String, Number> {
   private void buildChart(Stage stage) throws IOException {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        CsvConfiguration.TIME_PERIOD_IDENTIFIER,
-        getPriorityLabelsBySuffix(CsvConfiguration.FREQUENCIES_SUFIX));
+        JiraCsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        getPriorityLabelsBySuffix(JiraCsvConfiguration.FREQUENCIES_SUFIX));
 
     showAndSaveChart(CHART_TITLE, stage, chartSeries);
   }

@@ -1,7 +1,7 @@
 package crest.jira.data.miner.chart.issue;
 
 import crest.jira.data.miner.chart.AbstractChart;
-import crest.jira.data.miner.report.model.CsvConfiguration;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -26,8 +26,8 @@ public abstract class ReleasesToFixByPriorityChart extends AbstractChart<String,
   private String priorityName;
 
   public ReleasesToFixByPriorityChart(int priorityIndex) {
-    priorityValue = CsvConfiguration.PRIORITIES[priorityIndex];
-    priorityName = CsvConfiguration.PRIORITY_DESCRIPTIONS[priorityIndex];
+    priorityValue = JiraCsvConfiguration.PRIORITIES[priorityIndex];
+    priorityName = JiraCsvConfiguration.PRIORITY_DESCRIPTIONS[priorityIndex];
   }
 
   @Override
@@ -36,18 +36,21 @@ public abstract class ReleasesToFixByPriorityChart extends AbstractChart<String,
   }
 
   private void buildChart(Stage stage) throws IOException {
-    String valueIdentifier = CsvConfiguration.RELEASES_TO_FIX_SUFFIX;
+    String valueIdentifier = JiraCsvConfiguration.RELEASES_TO_FIX_SUFFIX;
     Predicate<CSVRecord> validRecordPredicate = new Predicate<CSVRecord>() {
       @Override
       public boolean evaluate(CSVRecord csvRecord) {
-        String recordPriority = csvRecord.get(CsvConfiguration.ORIGINAL_PRIORITY);
+        String recordPriority = csvRecord.get(JiraCsvConfiguration.ORIGINAL_PRIORITY);
         String dataPoint = csvRecord.get(valueIdentifier);
         return recordPriority.equals(priorityValue) && !StringUtils.isEmpty(dataPoint);
       }
     };
 
-    List<Series<String, Number>> chartSeries = getSeriesForHistogramUsingBins(getCsvFileLocation(),
+    /*List<Series<String, Number>> chartSeries = getSeriesForHistogramUsingBins(getCsvFileLocation(),
+        valueIdentifier, BIN_COUNT, validRecordPredicate);*/
+    List<Series<String, Number>> chartSeries = getSeriesForHistogram(getCsvFileLocation(),
         valueIdentifier, BIN_COUNT, validRecordPredicate);
+    
     showAndSaveChart(CHART_TITLE + priorityName, stage, chartSeries);
 
   }

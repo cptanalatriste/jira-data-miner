@@ -1,8 +1,11 @@
 package crest.jira.data.miner.report.model;
 
+import crest.jira.data.miner.csv.CsvExportSupport;
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
 import crest.jira.data.retriever.model.User;
 
-import org.apache.commons.collections4.map.MultiValueMap;
+import org.apache.commons.collections4.MultiMapUtils;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.math3.stat.Frequency;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -32,7 +35,8 @@ public class JiraIssueBag<T> implements CsvExportSupport {
   private List<ExtendedIssue> originalIssues;
   private T identifier;
 
-  private MultiValueMap<String, ExtendedIssue> issuesPerReporter = new MultiValueMap<>();
+  private MultiValuedMap<String, ExtendedIssue> issuesPerReporter = MultiMapUtils
+      .newSetValuedHashMap();
 
   public JiraIssueBag() {
   }
@@ -52,7 +56,7 @@ public class JiraIssueBag<T> implements CsvExportSupport {
   }
 
   private void initializePriorityStatistics(HashMap<String, DescriptiveStatistics> counterMap) {
-    for (String priority : CsvConfiguration.PRIORITIES) {
+    for (String priority : JiraCsvConfiguration.PRIORITIES) {
       counterMap.put(priority, new DescriptiveStatistics());
     }
   }
@@ -126,38 +130,38 @@ public class JiraIssueBag<T> implements CsvExportSupport {
   @Override
   public String[] getCsvHeader() {
     List<String> headerAsString = new ArrayList<String>();
-    headerAsString.add(CsvConfiguration.TIME_PERIOD_IDENTIFIER);
+    headerAsString.add(JiraCsvConfiguration.TIME_PERIOD_IDENTIFIER);
 
-    for (String priority : CsvConfiguration.PRIORITIES) {
-      String priorityDescription = CsvConfiguration.PRIORITY_DESCRIPTIONS[Integer
+    for (String priority : JiraCsvConfiguration.PRIORITIES) {
+      String priorityDescription = JiraCsvConfiguration.PRIORITY_DESCRIPTIONS[Integer
           .parseInt(priority)];
 
       headerAsString.add(priorityDescription);
-      headerAsString.add(priorityDescription + CsvConfiguration.RELATIVE_SUFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.RESOLVED_SUFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.RESOLVED_RELATIVE_SUFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.UNRESOLVED_SUFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_AVG_SUFFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_MED_SUFFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.RESTIME_STD_SUFFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.RELEASES_TO_FIX_SUFFIX);
-      headerAsString.add(priorityDescription + CsvConfiguration.RELEASES_TO_FIX_STD_SUFFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RESOLVED_SUFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RESOLVED_RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.UNRESOLVED_SUFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.UNRESOLVED_RELATIVE_SUFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RESTIME_AVG_SUFFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RESTIME_MED_SUFFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RESTIME_STD_SUFFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RELEASES_TO_FIX_SUFFIX);
+      headerAsString.add(priorityDescription + JiraCsvConfiguration.RELEASES_TO_FIX_STD_SUFFIX);
 
     }
 
-    headerAsString.addAll(Arrays.asList(CsvConfiguration.TOTAL_IDENTIFIER,
-        CsvConfiguration.TOTAL_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
-        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
-        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.RELATIVE_SUFIX,
-        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
-        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.RESTIME_MED_SUFFIX,
-        CsvConfiguration.NON_SEVERE_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
-        CsvConfiguration.SEVERE_IDENTIFIER + CsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
-        CsvConfiguration.PRIORITY_CHANGES_IDENTIFIER,
-        CsvConfiguration.RELATIVE_PRIORITY_CHANGES_IDENTIFIER,
-        CsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
-        CsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER, CsvConfiguration.CHANGERS_IDENTIFIER,
+    headerAsString.addAll(Arrays.asList(JiraCsvConfiguration.TOTAL_IDENTIFIER,
+        JiraCsvConfiguration.TOTAL_IDENTIFIER + JiraCsvConfiguration.RESTIME_MED_SUFFIX,
+        JiraCsvConfiguration.NON_SEVERE_IDENTIFIER + JiraCsvConfiguration.RELATIVE_SUFIX,
+        JiraCsvConfiguration.SEVERE_IDENTIFIER + JiraCsvConfiguration.RELATIVE_SUFIX,
+        JiraCsvConfiguration.NON_SEVERE_IDENTIFIER + JiraCsvConfiguration.RESTIME_MED_SUFFIX,
+        JiraCsvConfiguration.SEVERE_IDENTIFIER + JiraCsvConfiguration.RESTIME_MED_SUFFIX,
+        JiraCsvConfiguration.NON_SEVERE_IDENTIFIER + JiraCsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        JiraCsvConfiguration.SEVERE_IDENTIFIER + JiraCsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        JiraCsvConfiguration.PRIORITY_CHANGES_IDENTIFIER,
+        JiraCsvConfiguration.RELATIVE_PRIORITY_CHANGES_IDENTIFIER,
+        JiraCsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
+        JiraCsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER, JiraCsvConfiguration.CHANGERS_IDENTIFIER,
         "Top Reporter", "Top Changer"));
 
     return headerAsString.toArray(new String[headerAsString.size()]);
@@ -171,7 +175,7 @@ public class JiraIssueBag<T> implements CsvExportSupport {
     Double numberOfIssues = new Double(getNumberOfIssues());
     recordAsList.add(identifier.toString());
 
-    for (String priority : CsvConfiguration.PRIORITIES) {
+    for (String priority : JiraCsvConfiguration.PRIORITIES) {
       recordAsList.add(priorityFrequency.getCount(priority));
       recordAsList.add(getRelativeFrequencyByPriority(priority));
       recordAsList.add(resolvedFrequency.getCount(priority));
@@ -254,7 +258,6 @@ public class JiraIssueBag<T> implements CsvExportSupport {
    *          Reporter.
    * @return An issue bag for this reporter.
    */
-  @SuppressWarnings("unchecked")
   public JiraIssueBag<T> getIssuesPerReporter(User reporter) {
     List<ExtendedIssue> thisReporterIssues = (List<ExtendedIssue>) issuesPerReporter
         .get(reporter.getName());
