@@ -46,11 +46,14 @@ public abstract class ReleasesToFixByPriorityChart extends AbstractChart<String,
       }
     };
 
-    /*List<Series<String, Number>> chartSeries = getSeriesForHistogramUsingBins(getCsvFileLocation(),
-        valueIdentifier, BIN_COUNT, validRecordPredicate);*/
+    /*
+     * List<Series<String, Number>> chartSeries =
+     * getSeriesForHistogramUsingBins(getCsvFileLocation(), valueIdentifier,
+     * BIN_COUNT, validRecordPredicate);
+     */
     List<Series<String, Number>> chartSeries = getSeriesForHistogram(getCsvFileLocation(),
         valueIdentifier, BIN_COUNT, validRecordPredicate);
-    
+
     showAndSaveChart(CHART_TITLE + priorityName, stage, chartSeries);
 
   }

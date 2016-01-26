@@ -108,9 +108,9 @@ public class JiraIssueBag<T> implements CsvExportSupport {
       Double resolutionTime = extendedIssue.getResolutionTime();
       counterPerPriority.addValue(resolutionTime);
 
-      if (extendedIssue.isSevere()) {
+      if (extendedIssue.isReportedSevere()) {
         severeResolutionTime.addValue(resolutionTime);
-      } else if (extendedIssue.isNonSevere()) {
+      } else if (extendedIssue.isReportedNonSevere()) {
         nonSevereResolutionTime.addValue(resolutionTime);
       }
 
@@ -161,8 +161,8 @@ public class JiraIssueBag<T> implements CsvExportSupport {
         JiraCsvConfiguration.PRIORITY_CHANGES_IDENTIFIER,
         JiraCsvConfiguration.RELATIVE_PRIORITY_CHANGES_IDENTIFIER,
         JiraCsvConfiguration.NUMBER_REPORTERS_IDENTIFIER,
-        JiraCsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER, JiraCsvConfiguration.CHANGERS_IDENTIFIER,
-        "Top Reporter", "Top Changer"));
+        JiraCsvConfiguration.ISSUES_PER_REPORTER_IDENTIFIER,
+        JiraCsvConfiguration.CHANGERS_IDENTIFIER, "Top Reporter", "Top Changer"));
 
     return headerAsString.toArray(new String[headerAsString.size()]);
 

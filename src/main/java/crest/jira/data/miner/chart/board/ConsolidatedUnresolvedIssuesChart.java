@@ -29,7 +29,8 @@ public class ConsolidatedUnresolvedIssuesChart extends AbstractChart<String, Num
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
         JiraCsvConfiguration.TIME_PERIOD_IDENTIFIER,
         JiraCsvConfiguration.NON_SEVERE_IDENTIFIER + JiraCsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
-        JiraCsvConfiguration.PRIORITY_DESCRIPTIONS[3] + JiraCsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
+        JiraCsvConfiguration.PRIORITY_DESCRIPTIONS[3]
+            + JiraCsvConfiguration.UNRESOLVED_RELATIVE_SUFIX,
         JiraCsvConfiguration.SEVERE_IDENTIFIER + JiraCsvConfiguration.UNRESOLVED_RELATIVE_SUFIX);
 
     showAndSaveChart("Consolidated Unresolved Percentage", stage, chartSeries);

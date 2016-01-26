@@ -61,7 +61,7 @@ public class ExtendedIssue implements CsvExportSupport {
   public boolean isProbablyAnInflation() {
     // TODO(cgavidia): This rule needs to be improved!
     int maximumReleasesForSevere = 0;
-    return this.isSevere() && (this.getReleasesToBeFixed() != null
+    return this.isReportedSevere() && (this.getReleasesToBeFixed() != null
         && this.getReleasesToBeFixed() > maximumReleasesForSevere);
   }
 
@@ -70,7 +70,7 @@ public class ExtendedIssue implements CsvExportSupport {
    * 
    * @return True if it is severe, false if it is not.
    */
-  public boolean isSevere() {
+  public boolean isReportedSevere() {
     if ("1".equals(originalPriority.getId()) || "2".equals(originalPriority.getId())) {
       return true;
     }
@@ -83,7 +83,7 @@ public class ExtendedIssue implements CsvExportSupport {
    * 
    * @return True if it is a default, false if it is not.
    */
-  public boolean isDefault() {
+  public boolean isReportedDefault() {
     if ("3".equals(originalPriority.getId())) {
       return true;
     }
@@ -96,7 +96,7 @@ public class ExtendedIssue implements CsvExportSupport {
    * 
    * @return True if it is non-severe, false if it is not.
    */
-  public boolean isNonSevere() {
+  public boolean isReportedNonSevere() {
     if ("4".equals(originalPriority.getId()) || "5".equals(originalPriority.getId())) {
       return true;
     }

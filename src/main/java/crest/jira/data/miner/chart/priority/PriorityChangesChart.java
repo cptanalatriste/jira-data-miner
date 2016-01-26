@@ -10,7 +10,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.stage.Stage;
 
-
 import java.io.IOException;
 import java.util.List;
 
@@ -28,7 +27,8 @@ public class PriorityChangesChart extends AbstractChart<String, Number> {
   private void buildChart(Stage stage) throws IOException {
 
     List<Series<String, Number>> chartSeries = getSeries(getCsvFileLocation(),
-        JiraCsvConfiguration.TIME_PERIOD_IDENTIFIER, JiraCsvConfiguration.PRIORITY_CHANGES_IDENTIFIER);
+        JiraCsvConfiguration.TIME_PERIOD_IDENTIFIER,
+        JiraCsvConfiguration.PRIORITY_CHANGES_IDENTIFIER);
 
     showAndSaveChart("Priority Changes", stage, chartSeries);
   }
@@ -41,8 +41,7 @@ public class PriorityChangesChart extends AbstractChart<String, Number> {
     NumberAxis counterAxis = new NumberAxis();
     counterAxis.setLabel(COUNT_LABEL);
 
-    BarChart<String, Number> barChart = new BarChart<String, Number>(periodAxis,
-        counterAxis);
+    BarChart<String, Number> barChart = new BarChart<String, Number>(periodAxis, counterAxis);
     return barChart;
   }
 }

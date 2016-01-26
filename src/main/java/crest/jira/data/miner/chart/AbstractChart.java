@@ -1,5 +1,7 @@
 package crest.jira.data.miner.chart;
 
+import crest.jira.data.miner.csv.JiraCsvConfiguration;
+
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -9,6 +11,7 @@ import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
+
 
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.csv.CSVFormat;
@@ -28,10 +31,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javax.imageio.ImageIO;
 
