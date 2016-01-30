@@ -1,5 +1,6 @@
 package crest.jira.data.miner.chart;
 
+import crest.jira.data.miner.csv.CsvUtils;
 import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.application.Application;
@@ -89,7 +90,7 @@ public abstract class AbstractChart<X, Y> extends Application {
       series.put(valueIdentifier, serie);
     }
 
-    List<CSVRecord> records = getCsvRecords(fileName);
+    List<CSVRecord> records = CsvUtils.getCsvRecords(fileName);
 
     for (int index = 0; index < records.size(); index += 1) {
       CSVRecord csvRecord = records.get(index);
@@ -110,21 +111,6 @@ public abstract class AbstractChart<X, Y> extends Application {
     }
 
     return seriesAsList;
-  }
-
-  protected List<CSVRecord> getCsvRecords(String fileName) {
-    List<CSVRecord> csvRecords = null;
-    CSVParser csvParser = null;
-    CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader();
-
-    try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-      csvParser = new CSVParser(bufferedReader, csvFormat);
-      csvRecords = csvParser.getRecords();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
-
-    return csvRecords;
   }
 
   protected Map<String, Integer> getCsvHeaderMap(String fileName) {
@@ -190,7 +176,7 @@ public abstract class AbstractChart<X, Y> extends Application {
     EmpiricalDistribution empiricalDistributon = new EmpiricalDistribution(binCount);
     List<Double> dataPoints = new ArrayList<>();
 
-    List<CSVRecord> records = getCsvRecords(fileName);
+    List<CSVRecord> records = CsvUtils.getCsvRecords(fileName);
 
     for (int index = 0; index < records.size(); index += 1) {
       CSVRecord csvRecord = records.get(index);
@@ -241,7 +227,7 @@ public abstract class AbstractChart<X, Y> extends Application {
       int binCount, Predicate<CSVRecord> isValid) {
     Frequency frequency = new Frequency();
 
-    List<CSVRecord> records = getCsvRecords(fileName);
+    List<CSVRecord> records = CsvUtils.getCsvRecords(fileName);
 
     for (int index = 0; index < records.size(); index += 1) {
       CSVRecord csvRecord = records.get(index);

@@ -1,6 +1,7 @@
 package crest.jira.data.miner.chart.user;
 
 import crest.jira.data.miner.chart.AbstractChart;
+import crest.jira.data.miner.csv.CsvUtils;
 import crest.jira.data.miner.csv.JiraCsvConfiguration;
 
 import javafx.scene.chart.NumberAxis;
@@ -51,7 +52,7 @@ public class UserPriorityAssignmentsChart extends AbstractChart<Number, Number> 
       String nonSevereIdentifier, String severeIdentifier) {
 
     List<Series<Number, Number>> seriesAsList = new ArrayList<>();
-    List<CSVRecord> records = getCsvRecords(fileName);
+    List<CSVRecord> records = CsvUtils.getCsvRecords(fileName);
 
     for (int index = 0; index < records.size(); index += 1) {
       CSVRecord record = records.get(index);
