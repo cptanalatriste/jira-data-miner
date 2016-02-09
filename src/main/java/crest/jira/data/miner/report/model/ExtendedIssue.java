@@ -39,6 +39,7 @@ public class ExtendedIssue implements CsvExportSupport {
   private boolean isResolved = false;
 
   private Set<Version> projectVersions;
+  private ExtendedUser reporterMetrics;
 
   /**
    * Calculates additional fields that are necessary for analysis.
@@ -48,6 +49,7 @@ public class ExtendedIssue implements CsvExportSupport {
    */
   public ExtendedIssue(Issue issue) {
     this.issue = issue;
+    this.reporterMetrics = new ExtendedUser(this.issue.getReporter());
 
     loadPriorityProperties();
     loadResolutionProperties();
@@ -243,7 +245,7 @@ public class ExtendedIssue implements CsvExportSupport {
         String latestReleaseAsString = latestReleaseDate != null
             ? dateFormat.format(latestReleaseDate) : "NO DATE";
 
-        logger.severe("On issue " + this.getIssue().getKey() + " (Reported "
+        logger.fine("On issue " + this.getIssue().getKey() + " (Reported "
             + dateFormat.format(this.getIssue().getCreated()) + ") was fixed on Release "
             + latestFixVersion.getName() + " (Index " + fixVersionIndex + " "
             + latestReleaseAsString + " ). However, the closest release was "
@@ -274,6 +276,10 @@ public class ExtendedIssue implements CsvExportSupport {
     joinedSet.addAll(Arrays.asList(issue.getFixVersions()));
 
     this.projectVersions = joinedSet;
+  }
+
+  public ExtendedUser getReporterMetrics() {
+    return reporterMetrics;
   }
 
   @Override

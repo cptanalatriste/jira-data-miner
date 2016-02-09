@@ -1,7 +1,6 @@
 package crest.jira.data.miner;
 
 import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
 
 import crest.jira.data.miner.config.ConfigurationProvider;
@@ -12,28 +11,24 @@ import crest.jira.data.miner.report.model.ExtendedIssue;
 import crest.jira.data.miner.report.model.JiraIssueBag;
 import crest.jira.data.miner.report.model.ReleaseDateComparator;
 import crest.jira.data.miner.report.model.UserJiraIssueBag;
-
 import crest.jira.data.retriever.model.Board;
 import crest.jira.data.retriever.model.User;
 import crest.jira.data.retriever.model.Version;
 
 import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 public class GenerateConsolidatedCsvFiles extends BaseCsvGenerator {
 
+  private static final String REPORTERS_FILE_PREFIX = "Reporters_Board_";
+  private static final String ISSUES_FILE_PREFIX = "Issues_for_Board_";
+  private static final String RELEASE_FILE_PREFIX = "Board_";
   private static final String ALLBOARDS_KEY = "ALLBOARDS";
   public static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
 
@@ -94,17 +89,17 @@ public class GenerateConsolidatedCsvFiles extends BaseCsvGenerator {
       throws SQLException, IOException {
     JiraIssueListDao issueListDao = new JiraIssueListDao(connectionSource);
     issueListDao.loadBoardIssues(boardId, onlyBugs);
-    generateCsvFile("Issues_for_Board_" + boardId, issueListDao.getIssueList());
+    generateCsvFile(ISSUES_FILE_PREFIX + boardId, issueListDao.getIssueList());
 
     MultiValuedMap<Version, ExtendedIssue> issuesInGroups = issueListDao.organizeInReleases();
     List<JiraIssueBag<Version>> issueBags = getBagsPerTimePeriod(issuesInGroups,
         new ReleaseDateComparator());
 
-    generateCsvFile("Board_" + boardId, issueBags);
+    generateCsvFile(RELEASE_FILE_PREFIX + boardId, issueBags);
 
     Object[] reporters = issueListDao.getReporterCatalogPerBoard(boardId).toArray();
     List<CsvExportSupport> userIssueBags = getBagsPerUser(reporters, issueBags);
-    generateCsvFile("Reporters_Board_" + boardId, userIssueBags);
+    generateCsvFile(REPORTERS_FILE_PREFIX + boardId, userIssueBags);
 
   }
 

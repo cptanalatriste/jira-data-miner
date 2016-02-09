@@ -8,12 +8,12 @@ import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 
 import crest.jira.data.miner.report.model.ExtendedIssue;
+import crest.jira.data.miner.report.model.ExtendedUser;
 import crest.jira.data.retriever.map.ResponseList;
 import crest.jira.data.retriever.model.ChangeLogItem;
 import crest.jira.data.retriever.model.FixVersionPerIssue;
 import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
-import crest.jira.data.retriever.model.User;
 import crest.jira.data.retriever.model.Version;
 import crest.jira.data.retriever.model.VersionPerIssue;
 
@@ -193,15 +193,16 @@ public class JiraIssueListDao {
    *          Board identifier.
    * @return List of reporters.
    */
-  public Set<User> getReporterCatalogPerBoard(String boardId) {
-    Set<User> reporterCatalog = new HashSet<>();
+  public Set<ExtendedUser> getReporterCatalogPerBoard(String boardId) {
+    Set<ExtendedUser> reporterCatalog = new HashSet<>();
     for (ExtendedIssue extendedIssue : issueList) {
 
       if (boardId.equals(extendedIssue.getIssue().getBoardId())) {
-        boolean isAdded = reporterCatalog.add(extendedIssue.getIssue().getReporter());
+        boolean isAdded = reporterCatalog
+            .add(new ExtendedUser(extendedIssue.getIssue().getReporter()));
 
         if (!isAdded) {
-          logger.finest(
+          logger.fine(
               "User " + extendedIssue.getIssue().getReporter().getName() + " is already there ");
         }
       }
