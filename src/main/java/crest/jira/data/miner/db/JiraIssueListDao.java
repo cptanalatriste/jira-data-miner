@@ -75,6 +75,7 @@ public class JiraIssueListDao {
 
     List<Issue> issuesFromDb = issueDao.query(preparedQuery);
     loadHistoryForIssueList(issuesFromDb);
+    loadVersionsForIssueList();
   }
 
   /**
@@ -227,7 +228,14 @@ public class JiraIssueListDao {
     return issuesPerTimeFrame;
   }
 
-  private String getTimeFrameKey(ExtendedIssue extendedIssue) {
+  /**
+   * Generates a key for the map, based on the creation date.
+   * 
+   * @param extendedIssue
+   *          Issue
+   * @return Key as String.
+   */
+  public static String getTimeFrameKey(ExtendedIssue extendedIssue) {
     Date reportedDate = extendedIssue.getIssue().getCreated();
     Calendar reportedDateAsCalendar = Calendar.getInstance();
     reportedDateAsCalendar.setTime(reportedDate);

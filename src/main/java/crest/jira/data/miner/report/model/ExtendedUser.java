@@ -1,7 +1,6 @@
 package crest.jira.data.miner.report.model;
 
 import crest.jira.data.retriever.model.User;
-import crest.jira.data.retriever.model.Version;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -16,7 +15,7 @@ public class ExtendedUser {
 
   private User user;
   private long releaseParticipation;
-  private HashMap<Version, Double> inflationRatios;
+  private HashMap<String, Double> inflationRatios;
 
   /**
    * This instance produce user metrics through multiple games.
@@ -38,17 +37,17 @@ public class ExtendedUser {
   public SimpleRegression getRegressionForInflation() {
     SimpleRegression regression = new SimpleRegression();
 
-    List<Version> versions = new ArrayList<>(inflationRatios.keySet());
-    Collections.sort(versions, new ReleaseDateComparator());
+    List<String> timeFrame = new ArrayList<>(inflationRatios.keySet());
+    Collections.sort(timeFrame);
 
-    for (int index = 0; index < versions.size(); index += 1) {
-      regression.addData(index, inflationRatios.get(versions.get(index)));
+    for (int index = 0; index < timeFrame.size(); index += 1) {
+      regression.addData(index, inflationRatios.get(timeFrame.get(index)));
     }
 
     return regression;
   }
 
-  public HashMap<Version, Double> getInflationRatios() {
+  public HashMap<String, Double> getInflationRatios() {
     return inflationRatios;
   }
 

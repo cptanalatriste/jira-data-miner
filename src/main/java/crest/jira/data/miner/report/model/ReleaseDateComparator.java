@@ -7,8 +7,8 @@ import java.util.Date;
 
 public class ReleaseDateComparator implements Comparator<Version> {
 
-  private static final String MAXIMUM_VERSION = "Future";
-  private static final String MINIMUM_VERSION = "pre-4.0.0";
+  public static final String MAXIMUM_VERSION = "Future";
+  public static final String MINIMUM_VERSION = "pre-4.0.0";
 
   @Override
   public int compare(Version oneVersion, Version anotherVersion) {

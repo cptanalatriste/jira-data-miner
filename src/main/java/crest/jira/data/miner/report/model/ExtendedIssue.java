@@ -2,10 +2,12 @@ package crest.jira.data.miner.report.model;
 
 import crest.jira.data.miner.csv.CsvExportSupport;
 import crest.jira.data.miner.csv.JiraCsvConfiguration;
+import crest.jira.data.miner.db.JiraIssueListDao;
 import crest.jira.data.retriever.model.ChangeLogItem;
 import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
 import crest.jira.data.retriever.model.Priority;
+import crest.jira.data.retriever.model.Resolution;
 import crest.jira.data.retriever.model.Version;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -37,6 +39,7 @@ public class ExtendedIssue implements CsvExportSupport {
   private boolean doesPriorityChanged;
   private double resolutionTime = 0.0;
   private boolean isResolved = false;
+  private boolean isAcceptedByDevTeam = false;
 
   private Set<Version> projectVersions;
   private ExtendedUser reporterMetrics;
@@ -62,9 +65,12 @@ public class ExtendedIssue implements CsvExportSupport {
    */
   public boolean isProbablyAnInflation() {
     // TODO(cgavidia): This rule needs to be improved!
-    int maximumReleasesForSevere = 0;
-    return this.isReportedSevere() && (this.getReleasesToBeFixed() != null
-        && this.getReleasesToBeFixed() > maximumReleasesForSevere);
+    int maximumReleasesForSevere = 1;
+    boolean fixIsDelayed = this.getReleasesToBeFixed() != null
+        && this.getReleasesToBeFixed() > maximumReleasesForSevere;
+    boolean fixIsRejected = this.getIssue().getResolution() != null && !this.isAcceptedByDevTeam();
+
+    return this.isReportedSevere() && (fixIsDelayed || fixIsRejected);
   }
 
   /**
@@ -116,6 +122,12 @@ public class ExtendedIssue implements CsvExportSupport {
       this.isResolved = true;
     }
 
+    if (this.issue.getResolution() != null) {
+      this.isAcceptedByDevTeam = !Arrays
+          .asList(Resolution.NOT_A_PROBLEM, Resolution.INVALID, Resolution.WONT_FIX,
+              Resolution.INCOMPLETE, Resolution.CANNOT_REPRODUCE, Resolution.UNRESOLVED)
+          .contains(this.issue.getResolution().getId());
+    }
   }
 
   private void loadPriorityProperties() {
@@ -180,6 +192,14 @@ public class ExtendedIssue implements CsvExportSupport {
     return issue;
   }
 
+  public boolean isAcceptedByDevTeam() {
+    return isAcceptedByDevTeam;
+  }
+
+  public void setAcceptedByDevTeam(boolean isAcceptedByDevTeam) {
+    this.isAcceptedByDevTeam = isAcceptedByDevTeam;
+  }
+
   /**
    * Returns the version that's the closest to the report of the Issue.
    * 
@@ -197,24 +217,40 @@ public class ExtendedIssue implements CsvExportSupport {
     return NO_RELEASE;
   }
 
-  private Version getLatestFixVersion() {
-    Version latestFixVersion = NO_RELEASE;
+  private Version getEarliestAffectedAversion() {
+    Version earliestAffectedVersion = NO_RELEASE;
+    Version[] affectedVersionsArray = this.issue.getVersions();
 
-    Version[] fixVersionsArray = issue.getFixVersions();
-    if (fixVersionsArray.length > 0) {
-      List<Version> fixVersions = new ArrayList<Version>(Arrays.asList(fixVersionsArray));
-      Collections.sort(fixVersions, new ReleaseDateComparator());
+    if (affectedVersionsArray != null && affectedVersionsArray.length > 0) {
+      List<Version> affectedVersions = new ArrayList<Version>(Arrays.asList(affectedVersionsArray));
+      Collections.sort(affectedVersions, new VersionNameComparator());
 
-      latestFixVersion = fixVersions.get(fixVersions.size() - 1);
+      earliestAffectedVersion = affectedVersions.get(0);
     }
 
-    return latestFixVersion;
+    return earliestAffectedVersion;
   }
 
-  private Integer getVersionIndex(Version version) {
-    int index = 0;
+  private Version getEarliestFixVersion() {
+    Version earliestFixVersion = NO_RELEASE;
 
-    for (Version currentVersion : this.projectVersions) {
+    Version[] fixVersionsArray = issue.getFixVersions();
+    if (fixVersionsArray != null && fixVersionsArray.length > 0) {
+      List<Version> fixVersions = new ArrayList<Version>(Arrays.asList(fixVersionsArray));
+      Collections.sort(fixVersions, new VersionNameComparator());
+
+      earliestFixVersion = fixVersions.get(0);
+    }
+
+    return earliestFixVersion;
+  }
+
+  private Integer getVersionIndexByName(Version version) {
+    int index = 0;
+    List<Version> nameSortedVersions = new ArrayList<>(this.projectVersions);
+    Collections.sort(nameSortedVersions, new VersionNameComparator());
+
+    for (Version currentVersion : nameSortedVersions) {
       if (currentVersion.equals(version)) {
         return index;
       }
@@ -231,26 +267,32 @@ public class ExtendedIssue implements CsvExportSupport {
    * @return Number of releases, and -1 if no fix version was included.
    */
   public Integer getReleasesToBeFixed() {
+    Version earliestAffectedVersion = this.getEarliestAffectedAversion();
+    Version earliestFixVersion = this.getEarliestFixVersion();
 
-    Version closestRelease = this.getClosestRelease();
-    Version latestFixVersion = this.getLatestFixVersion();
+    if (this.issue.getResolution() != null && !this.isAcceptedByDevTeam()) {
+      return null;
+    }
 
-    if (!NO_RELEASE.equals(closestRelease) && !NO_RELEASE.equals(latestFixVersion)) {
-      int closestReleaseIndex = getVersionIndex(closestRelease);
-      int fixVersionIndex = getVersionIndex(latestFixVersion);
+    if (!NO_RELEASE.equals(earliestAffectedVersion) && !NO_RELEASE.equals(earliestFixVersion)) {
+      int closestReleaseIndex = getVersionIndexByName(earliestAffectedVersion);
+      int fixVersionIndex = getVersionIndexByName(earliestFixVersion);
 
       if (fixVersionIndex < closestReleaseIndex) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
-        Date latestReleaseDate = latestFixVersion.getReleaseDate();
+        Date latestReleaseDate = earliestFixVersion.getReleaseDate();
         String latestReleaseAsString = latestReleaseDate != null
             ? dateFormat.format(latestReleaseDate) : "NO DATE";
+        String affectedVersionDate = earliestAffectedVersion.getReleaseDate() != null
+            ? dateFormat.format(earliestAffectedVersion.getReleaseDate()) : "NO DATE";
 
-        logger.fine("On issue " + this.getIssue().getKey() + " (Reported "
-            + dateFormat.format(this.getIssue().getCreated()) + ") was fixed on Release "
-            + latestFixVersion.getName() + " (Index " + fixVersionIndex + " "
+        logger.severe("On issue " + this.getIssue().getKey() + " (Reported "
+            + dateFormat.format(this.getIssue().getCreated()) + " Affected version "
+            + earliestAffectedVersion.getName() + ") was fixed on Release "
+            + earliestFixVersion.getName() + " (Index " + fixVersionIndex + " "
             + latestReleaseAsString + " ). However, the closest release was "
-            + closestRelease.getName() + " (Index " + closestReleaseIndex + " "
-            + dateFormat.format(closestRelease.getReleaseDate()) + " )");
+            + earliestAffectedVersion.getName() + " (Index " + earliestAffectedVersion + " "
+            + affectedVersionDate + " )");
       }
 
       return fixVersionIndex - closestReleaseIndex;
@@ -291,13 +333,17 @@ public class ExtendedIssue implements CsvExportSupport {
     headerAsList.add(JiraCsvConfiguration.ORIGINAL_PRIORITY);
     headerAsList.add(JiraCsvConfiguration.CURRENT_PRIORITY);
     headerAsList.add(JiraCsvConfiguration.CREATION_DATE);
+    headerAsList.add(JiraCsvConfiguration.TIME_FRAME_KEY);
     headerAsList.add(JiraCsvConfiguration.REPORTER);
-    headerAsList.add(JiraCsvConfiguration.CLOSEST_RELEASE_NAME);
-    headerAsList.add(JiraCsvConfiguration.CLOSEST_RELEASE_INDEX);
-    headerAsList.add(JiraCsvConfiguration.CLOSEST_RELEASE_DATE);
-    headerAsList.add(JiraCsvConfiguration.LATEST_FIX_NAME);
-    headerAsList.add(JiraCsvConfiguration.LATEST_RELEASE_INDEX);
-    headerAsList.add(JiraCsvConfiguration.LATEST_FIX_DATE);
+
+    headerAsList.add(JiraCsvConfiguration.AFFECTED_VERSION);
+    headerAsList.add(JiraCsvConfiguration.AFFECTED_VERSION_INDEX);
+
+    headerAsList.add(JiraCsvConfiguration.IS_ACCEPTED_BY_DEV);
+
+    headerAsList.add(JiraCsvConfiguration.EARLIEST_FIX_NAME);
+    headerAsList.add(JiraCsvConfiguration.EARLIEST_RELEASE_INDEX);
+    headerAsList.add(JiraCsvConfiguration.EARLIEST_FIX_DATE);
     headerAsList.add(JiraCsvConfiguration.RELEASES_TO_FIX_SUFFIX);
 
     return headerAsList.toArray(new String[headerAsList.size()]);
@@ -315,18 +361,20 @@ public class ExtendedIssue implements CsvExportSupport {
         NO_PRIORITY);
     recordAsList.add(currentPriority.getId());
     recordAsList.add(this.issue.getCreated());
+    recordAsList.add(JiraIssueListDao.getTimeFrameKey(this));
     recordAsList.add(this.issue.getReporter().getName());
 
-    Version closestRelease = this.getClosestRelease();
-    recordAsList.add(closestRelease.getName());
-    recordAsList.add(getVersionIndex(closestRelease));
-    recordAsList.add(closestRelease.getReleaseDate());
+    Version affectedAversion = this.getEarliestAffectedAversion();
+    recordAsList.add(affectedAversion.getName());
+    recordAsList.add(getVersionIndexByName(affectedAversion));
 
-    Version latestFixVersion = (Version) ObjectUtils.defaultIfNull(this.getLatestFixVersion(),
+    recordAsList.add(this.isAcceptedByDevTeam);
+
+    Version earliestFixVersion = (Version) ObjectUtils.defaultIfNull(this.getEarliestFixVersion(),
         NO_RELEASE);
-    recordAsList.add(latestFixVersion.getName());
-    recordAsList.add(getVersionIndex(latestFixVersion));
-    recordAsList.add(latestFixVersion.getReleaseDate());
+    recordAsList.add(earliestFixVersion.getName());
+    recordAsList.add(getVersionIndexByName(earliestFixVersion));
+    recordAsList.add(earliestFixVersion.getReleaseDate());
 
     recordAsList.add(this.getReleasesToBeFixed());
     return recordAsList;

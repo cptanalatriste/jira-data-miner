@@ -40,10 +40,15 @@ public class JiraCsvConfiguration {
   public static final String CLOSEST_RELEASE_DATE = "Closest Release Date";
   public static final String CREATION_DATE = "Creation Date";
   public static final String REPORTER = "Reporter";
-  public static final String LATEST_FIX_NAME = "Latest Fix Version";
-  public static final String LATEST_RELEASE_INDEX = "Latest Fix Version Index";
-  public static final String LATEST_FIX_DATE = "Latest Fix Version Date";
+  public static final String EARLIEST_FIX_NAME = "Earliest Fix Version";
+  public static final String EARLIEST_RELEASE_INDEX = "Earliest Fix Version Index";
+  public static final String EARLIEST_FIX_DATE = "Earliest Fix Version Date";
   public static final String ORIGINAL_PRIORITY = "Original Priority";
   public static final String CURRENT_PRIORITY = "Current Priority";
+  public static final String AFFECTED_VERSION = "Affected Version";
+  public static final String IS_ACCEPTED_BY_DEV = "Accepted by Dev";
+  public static final String FIX_VERSION = "Fix Version";
+  public static final String AFFECTED_VERSION_INDEX = "Affected Version Index";
+  public static final String TIME_FRAME_KEY = "Time Frame Key";
 
 }

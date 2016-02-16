@@ -8,6 +8,7 @@ import crest.jira.data.miner.csv.BaseCsvGenerator;
 import crest.jira.data.miner.csv.CsvExportSupport;
 import crest.jira.data.miner.db.JiraIssueListDao;
 import crest.jira.data.miner.report.model.ExtendedIssue;
+import crest.jira.data.miner.report.model.ExtendedUser;
 import crest.jira.data.miner.report.model.JiraIssueBag;
 import crest.jira.data.miner.report.model.ReleaseDateComparator;
 import crest.jira.data.miner.report.model.UserJiraIssueBag;
@@ -17,6 +18,7 @@ import crest.jira.data.retriever.model.Version;
 
 import org.apache.commons.collections4.MultiValuedMap;
 
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -52,20 +54,25 @@ public class GenerateConsolidatedCsvFiles extends BaseCsvGenerator {
    */
   public static void main(String[] args) throws SQLException, SecurityException, IOException {
 
-    ConfigurationProvider configProvider = new ConfigurationProvider();
-    ConnectionSource connectionSource = configProvider.getConnectionSource();
+    try {
+      ConfigurationProvider configProvider = new ConfigurationProvider();
+      ConnectionSource connectionSource = configProvider.getConnectionSource();
 
-    GenerateConsolidatedCsvFiles generator = new GenerateConsolidatedCsvFiles();
+      GenerateConsolidatedCsvFiles generator = new GenerateConsolidatedCsvFiles();
 
-    generator.processAllBoards(connectionSource);
+      // generator.processAllBoards(connectionSource);
 
-    // boardDao = DaoManager.createDao(connectionSource, Board.class);
-    // List<Board> allBoards = boardDao.queryForAll();
-    // for (Board board : allBoards) {
-    // generator.processBoard(connectionSource, board.getId(), true);
-    // }
+      // boardDao = DaoManager.createDao(connectionSource, Board.class);
+      // List<Board> allBoards = boardDao.queryForAll();
+      // for (Board board : allBoards) {
+      // generator.processBoard(connectionSource, board.getId(), true);
+      // }
 
-    generator.processBoard(connectionSource, "2", true);
+      generator.processBoard(connectionSource, "2", true);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    Toolkit.getDefaultToolkit().beep();
   }
 
   private void processAllBoards(ConnectionSource connectionSource)
@@ -113,7 +120,7 @@ public class GenerateConsolidatedCsvFiles extends BaseCsvGenerator {
     List<CsvExportSupport> userIssueBags = new ArrayList<>();
 
     for (Object reporterAsObject : reporters) {
-      User reporter = (User) reporterAsObject;
+      User reporter = ((ExtendedUser) reporterAsObject).getUser();
       UserJiraIssueBag<T> userJiraIssueBag = new UserJiraIssueBag<T>(reporter);
       for (JiraIssueBag<T> issueBag : issueBags) {
         userJiraIssueBag.addBag(issueBag);

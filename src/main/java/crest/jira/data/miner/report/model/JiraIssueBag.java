@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -259,9 +260,9 @@ public class JiraIssueBag<T> implements CsvExportSupport {
    * @return An issue bag for this reporter.
    */
   public JiraIssueBag<T> getIssuesPerReporter(User reporter) {
-    List<ExtendedIssue> thisReporterIssues = (List<ExtendedIssue>) issuesPerReporter
-        .get(reporter.getName());
-    return new JiraIssueBag<T>(this.identifier, thisReporterIssues);
+    Set<ExtendedIssue> thisReporterIssues = (Set<ExtendedIssue>) (issuesPerReporter
+        .get(reporter.getName()));
+    return new JiraIssueBag<T>(this.identifier, new ArrayList<>(thisReporterIssues));
   }
 
 }
