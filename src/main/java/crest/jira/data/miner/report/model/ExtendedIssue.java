@@ -1,6 +1,6 @@
 package crest.jira.data.miner.report.model;
 
-import crest.jira.data.miner.csv.CsvExportSupport;
+import crest.jira.data.miner.csv.BaseCsvRecord;
 import crest.jira.data.miner.csv.JiraCsvConfiguration;
 import crest.jira.data.miner.db.JiraIssueListDao;
 import crest.jira.data.retriever.model.ChangeLogItem;
@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-public class ExtendedIssue implements CsvExportSupport {
+public class ExtendedIssue extends BaseCsvRecord {
 
   private static final String DATE_PATTERN = "yyyy-MM-dd";
 
@@ -270,7 +270,7 @@ public class ExtendedIssue implements CsvExportSupport {
     Version earliestAffectedVersion = this.getEarliestAffectedAversion();
     Version earliestFixVersion = this.getEarliestFixVersion();
 
-    if (this.issue.getResolution() != null && !this.isAcceptedByDevTeam()) {
+    if (this.issue.getResolution() == null || !this.isAcceptedByDevTeam()) {
       return null;
     }
 
@@ -325,59 +325,33 @@ public class ExtendedIssue implements CsvExportSupport {
   }
 
   @Override
-  public String[] getCsvHeader() {
-    List<String> headerAsList = new ArrayList<String>();
+  public void configureCsvRecord() {
 
-    headerAsList.add(JiraCsvConfiguration.ISSUE_KEY);
-    headerAsList.add(JiraCsvConfiguration.ISSUE_TYPE);
-    headerAsList.add(JiraCsvConfiguration.ORIGINAL_PRIORITY);
-    headerAsList.add(JiraCsvConfiguration.CURRENT_PRIORITY);
-    headerAsList.add(JiraCsvConfiguration.CREATION_DATE);
-    headerAsList.add(JiraCsvConfiguration.TIME_FRAME_KEY);
-    headerAsList.add(JiraCsvConfiguration.REPORTER);
-
-    headerAsList.add(JiraCsvConfiguration.AFFECTED_VERSION);
-    headerAsList.add(JiraCsvConfiguration.AFFECTED_VERSION_INDEX);
-
-    headerAsList.add(JiraCsvConfiguration.IS_ACCEPTED_BY_DEV);
-
-    headerAsList.add(JiraCsvConfiguration.EARLIEST_FIX_NAME);
-    headerAsList.add(JiraCsvConfiguration.EARLIEST_RELEASE_INDEX);
-    headerAsList.add(JiraCsvConfiguration.EARLIEST_FIX_DATE);
-    headerAsList.add(JiraCsvConfiguration.RELEASES_TO_FIX_SUFFIX);
-
-    return headerAsList.toArray(new String[headerAsList.size()]);
-  }
-
-  @Override
-  public List<Object> getCsvRecord() {
-    List<Object> recordAsList = new ArrayList<>();
-
-    recordAsList.add(this.issue.getKey());
-    recordAsList.add(this.issue.getIssueType().getId());
-    recordAsList.add(this.getOriginalPriority().getId());
+    this.addDataItem(JiraCsvConfiguration.ISSUE_KEY, this.issue.getKey());
+    this.addDataItem(JiraCsvConfiguration.ISSUE_TYPE, this.issue.getIssueType().getId());
+    this.addDataItem(JiraCsvConfiguration.ORIGINAL_PRIORITY, this.getOriginalPriority().getId());
 
     Priority currentPriority = (Priority) ObjectUtils.defaultIfNull(this.issue.getPriority(),
         NO_PRIORITY);
-    recordAsList.add(currentPriority.getId());
-    recordAsList.add(this.issue.getCreated());
-    recordAsList.add(JiraIssueListDao.getTimeFrameKey(this));
-    recordAsList.add(this.issue.getReporter().getName());
+    this.addDataItem(JiraCsvConfiguration.CURRENT_PRIORITY, currentPriority.getId());
+    this.addDataItem(JiraCsvConfiguration.CREATION_DATE, this.issue.getCreated());
+    this.addDataItem(JiraCsvConfiguration.TIME_FRAME_KEY, JiraIssueListDao.getTimeFrameKey(this));
+    this.addDataItem(JiraCsvConfiguration.REPORTER, this.issue.getReporter().getName());
 
     Version affectedAversion = this.getEarliestAffectedAversion();
-    recordAsList.add(affectedAversion.getName());
-    recordAsList.add(getVersionIndexByName(affectedAversion));
+    this.addDataItem(JiraCsvConfiguration.AFFECTED_VERSION, affectedAversion.getName());
+    this.addDataItem(JiraCsvConfiguration.AFFECTED_VERSION_INDEX,
+        getVersionIndexByName(affectedAversion));
 
-    recordAsList.add(this.isAcceptedByDevTeam);
+    this.addDataItem(JiraCsvConfiguration.IS_ACCEPTED_BY_DEV, this.isAcceptedByDevTeam);
 
     Version earliestFixVersion = (Version) ObjectUtils.defaultIfNull(this.getEarliestFixVersion(),
         NO_RELEASE);
-    recordAsList.add(earliestFixVersion.getName());
-    recordAsList.add(getVersionIndexByName(earliestFixVersion));
-    recordAsList.add(earliestFixVersion.getReleaseDate());
-
-    recordAsList.add(this.getReleasesToBeFixed());
-    return recordAsList;
+    this.addDataItem(JiraCsvConfiguration.EARLIEST_FIX_NAME, earliestFixVersion.getName());
+    this.addDataItem(JiraCsvConfiguration.EARLIEST_RELEASE_INDEX,
+        getVersionIndexByName(earliestFixVersion));
+    this.addDataItem(JiraCsvConfiguration.EARLIEST_FIX_DATE, earliestFixVersion.getReleaseDate());
+    this.addDataItem(JiraCsvConfiguration.RELEASES_TO_FIX_SUFFIX, this.getReleasesToBeFixed());
   }
 
   @Override

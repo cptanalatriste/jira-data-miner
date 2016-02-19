@@ -240,12 +240,19 @@ public class JiraIssueListDao {
     Calendar reportedDateAsCalendar = Calendar.getInstance();
     reportedDateAsCalendar.setTime(reportedDate);
 
-    String monthAsString = "" + (reportedDateAsCalendar.get(Calendar.MONTH) + 1);
-    if ((reportedDateAsCalendar.get(Calendar.MONTH) + 1) < 10) {
-      monthAsString = "0" + (reportedDateAsCalendar.get(Calendar.MONTH) + 1);
+    // Uncomment this in case of using Months as Time Frame
+    // int timeFrameAsNumber = reportedDateAsCalendar.get(Calendar.MONTH) + 1;
+    // String timeFramePrefix = "";
+    String timeFramePrefix = "B";
+    int timeFrameAsNumber = reportedDateAsCalendar.get(Calendar.MONTH) / 2 + 1;
+
+    String timeFrameAsString = timeFramePrefix + timeFrameAsNumber;
+
+    if (timeFrameAsNumber < 10) {
+      timeFrameAsString = timeFramePrefix + "0" + timeFrameAsNumber;
     }
 
-    return reportedDateAsCalendar.get(Calendar.YEAR) + "-" + monthAsString;
+    return reportedDateAsCalendar.get(Calendar.YEAR) + "-" + timeFrameAsString;
   }
 
   public List<ExtendedIssue> getIssueList() {
