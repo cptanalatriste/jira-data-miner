@@ -8,6 +8,7 @@ import crest.jira.data.retriever.model.History;
 import crest.jira.data.retriever.model.Issue;
 import crest.jira.data.retriever.model.Priority;
 import crest.jira.data.retriever.model.Resolution;
+import crest.jira.data.retriever.model.Status;
 import crest.jira.data.retriever.model.Version;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -63,14 +64,25 @@ public class ExtendedIssue extends BaseCsvRecord {
    * 
    * @return True if it is highly possible an inflation, false if it is not.
    */
-  public boolean isProbablyAnInflation() {
+  public boolean isInflated() {
     // TODO(cgavidia): This rule needs to be improved!
     int maximumReleasesForSevere = 1;
     boolean fixIsDelayed = this.getReleasesToBeFixed() != null
         && this.getReleasesToBeFixed() > maximumReleasesForSevere;
     boolean fixIsRejected = this.getIssue().getResolution() != null && !this.isAcceptedByDevTeam();
+    String statusId = this.getIssue().getStatus().getId();
+    boolean issueIsIgnoreed = Status.OPEN.equals(statusId) || Status.REOPEN.equals(statusId);
 
-    return this.isReportedSevere() && (fixIsDelayed || fixIsRejected);
+    return this.isReportedSevere() && (fixIsDelayed || fixIsRejected || issueIsIgnoreed);
+  }
+
+  public boolean isADefaultInflated() {
+    return this.isInflated() && this.getReleasesToBeFixed() != null;
+  }
+
+  public boolean isANonSevereInflated() {
+    return this.isInflated() && this.getReleasesToBeFixed() == null;
+
   }
 
   /**
@@ -343,6 +355,11 @@ public class ExtendedIssue extends BaseCsvRecord {
     this.addDataItem(JiraCsvConfiguration.AFFECTED_VERSION_INDEX,
         getVersionIndexByName(affectedAversion));
 
+    Resolution resolution = this.issue.getResolution();
+    Status status = this.issue.getStatus();
+
+    this.addDataItem(JiraCsvConfiguration.RESOLUTION, resolution != null ? resolution.getId() : "");
+    this.addDataItem(JiraCsvConfiguration.STATUS, status != null ? status.getId() : "");
     this.addDataItem(JiraCsvConfiguration.IS_ACCEPTED_BY_DEV, this.isAcceptedByDevTeam);
 
     Version earliestFixVersion = (Version) ObjectUtils.defaultIfNull(this.getEarliestFixVersion(),

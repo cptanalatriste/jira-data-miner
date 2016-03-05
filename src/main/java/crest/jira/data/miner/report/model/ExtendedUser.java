@@ -15,6 +15,10 @@ public class ExtendedUser {
 
   private User user;
   private long releaseParticipation;
+  private long nonSevereIssuesFound = 0;
+  private long defaultIssuesFound = 0;
+  private long nonSeverIssuesInflated = 0;
+  private long defaultIssuesInflated = 0;
   private HashMap<String, Double> inflationRatios;
 
   /**
@@ -47,12 +51,30 @@ public class ExtendedUser {
     return regression;
   }
 
+  public double getDefaultInflationRatio() {
+    return this.defaultIssuesInflated / (double) this.defaultIssuesFound;
+  }
+
+  public double getNonSevereInflationRatio() {
+    return this.nonSeverIssuesInflated / (double) this.nonSevereIssuesFound;
+  }
+
   public HashMap<String, Double> getInflationRatios() {
     return inflationRatios;
   }
 
-  public void reportParticipation() {
+  public void registerParticipation() {
     this.releaseParticipation += 1;
+  }
+
+  public void registerDefaultReport(long found, long inflated) {
+    this.defaultIssuesFound += found;
+    this.defaultIssuesInflated += inflated;
+  }
+
+  public void registerNonSevereReport(long found, long inflated) {
+    this.nonSevereIssuesFound += found;
+    this.nonSeverIssuesInflated += inflated;
   }
 
   public long getReleaseParticipation() {

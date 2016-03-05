@@ -241,10 +241,13 @@ public class JiraIssueListDao {
     reportedDateAsCalendar.setTime(reportedDate);
 
     // Uncomment this in case of using Months as Time Frame
-    // int timeFrameAsNumber = reportedDateAsCalendar.get(Calendar.MONTH) + 1;
-    // String timeFramePrefix = "";
-    String timeFramePrefix = "B";
-    int timeFrameAsNumber = reportedDateAsCalendar.get(Calendar.MONTH) / 2 + 1;
+    int timeFrameAsNumber = reportedDateAsCalendar.get(Calendar.MONTH) + 1;
+    String timeFramePrefix = "";
+
+    // Uncomment this in case using bi-months as Time Frame
+    // String timeFramePrefix = "B";
+    // int timeFrameAsNumber = reportedDateAsCalendar.get(Calendar.MONTH) / 2 +
+    // 1;
 
     String timeFrameAsString = timeFramePrefix + timeFrameAsNumber;
 

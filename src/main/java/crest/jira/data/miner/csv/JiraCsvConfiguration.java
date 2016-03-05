@@ -50,5 +50,7 @@ public class JiraCsvConfiguration {
   public static final String FIX_VERSION = "Fix Version";
   public static final String AFFECTED_VERSION_INDEX = "Affected Version Index";
   public static final String TIME_FRAME_KEY = "Time Frame Key";
+  public static final String RESOLUTION = "Resolution";
+  public static final String STATUS = "Status";
 
 }
