@@ -32,7 +32,7 @@ public class GenerateConsolidatedCsvFiles extends BaseCsvGenerator {
   private static final String ISSUES_FILE_PREFIX = "Issues_for_Board_";
   private static final String RELEASE_FILE_PREFIX = "Board_";
   private static final String ALLBOARDS_KEY = "ALLBOARDS";
-  public static final String FOLDER_NAME = "C:/Users/cgavi/OneDrive/phd2/jira_data/";
+  public static final String FOLDER_NAME = "C:/Users/Carlos G. Gavidia/OneDrive/phd2/jira_data/";
 
   private static Dao<Board, String> boardDao;
 
